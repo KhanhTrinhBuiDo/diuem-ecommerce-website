@@ -4,6 +4,9 @@ import { requireAdmin } from "@/lib/admin-auth";
 import { orderNext, type ActionResult, type CategoryRow, type CouponRow, type OrderStatus, type ProductInput } from "@/lib/admin-types";
 import { validateCategory, validateCoupon, validateProduct } from "@/lib/admin-validate";
 import { createClient } from "@/lib/supabase/server";
+import { parseWorkbook, type ParsedProduct } from "@/lib/admin-import";
+import { MAX_IMPORT_BYTES, type ImportResponse, type RowError } from "@/lib/admin-import-spec";
+import { listCategories } from "@/lib/admin-data";
 
 /**
  * Mọi thao tác ghi của admin. Mỗi action: (1) requireAdmin() ở server, (2) validate dữ liệu, (3) ghi bằng quyền người dùng
@@ -42,22 +45,22 @@ export async function saveProduct(input: ProductInput): Promise<ActionResult<{ i
     id = data.id as string;
   }
 
-  // Phiên bản: cập nhật/ thêm; phiên bản bị bỏ → tắt (không xóa vì đơn cũ còn tham chiếu)
+  // Phiên bản: cập nhật/thêm; phiên bản bị bỏ → tắt (không xóa vì đơn cũ còn tham chiếu). Chạy song song cho nhanh.
   const { data: existing } = await sb.from("product_variants").select("id").eq("product_id", id);
   const keep = new Set<string>();
+  const ops: PromiseLike<{ error: { code?: string; message: string } | null }>[] = [];
+  const toInsert: Record<string, unknown>[] = [];
   for (const v of input.variants) {
     const vr = { sku: v.sku.trim(), size_value: v.size_value, size_unit: v.size_unit, price_vnd: v.price_vnd, stock_qty: v.stock_qty, is_active: v.is_active };
     if (v.id) {
       keep.add(v.id);
-      const { error } = await sb.from("product_variants").update(vr).eq("id", v.id).eq("product_id", id);
-      if (error) return fail(dbError(error));
-    } else {
-      const { error } = await sb.from("product_variants").insert({ ...vr, product_id: id });
-      if (error) return fail(dbError(error));
-    }
+      ops.push(sb.from("product_variants").update(vr).eq("id", v.id).eq("product_id", id));
+    } else toInsert.push({ ...vr, product_id: id });
   }
+  if (toInsert.length) ops.push(sb.from("product_variants").insert(toInsert));
   const drop = (existing ?? []).map((e) => e.id as string).filter((x) => !keep.has(x));
-  if (drop.length) await sb.from("product_variants").update({ is_active: false }).in("id", drop);
+  if (drop.length) ops.push(sb.from("product_variants").update({ is_active: false }).in("id", drop));
+  for (const r of await Promise.all(ops)) if (r.error) return fail(dbError(r.error));
 
   // Ảnh: thay toàn bộ danh sách link (ảnh đầu = ảnh chính)
   await sb.from("product_images").delete().eq("product_id", id);
@@ -129,4 +132,121 @@ export async function deleteCategory(id: string): Promise<ActionResult> {
   if (count) return fail("Danh mục còn sản phẩm nên không thể xóa.");
   const { error } = await sb.from("storefront_categories").delete().eq("id", id);
   return error ? fail(dbError(error)) : { ok: true };
+}
+
+/* ───────── Nhập sản phẩm hàng loạt từ Excel ───────── */
+const chunk = <T,>(a: T[], n: number) => Array.from({ length: Math.ceil(a.length / n) }, (_, i) => a.slice(i * n, i * n + n));
+
+/**
+ * formData: file (.xlsx), commit ("1" = ghi vào DB; khác = chỉ kiểm tra thử).
+ * Luôn đọc + kiểm tra lại toàn bộ file ở server; không tin kết quả kiểm tra thử từ trình duyệt.
+ */
+export async function importProducts(formData: FormData): Promise<ImportResponse> {
+  await requireAdmin();
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) return { ok: false, error: "Hãy chọn file Excel (.xlsx)." };
+  if (!file.name.toLowerCase().endsWith(".xlsx")) return { ok: false, error: "Chỉ nhận file .xlsx (tải file mẫu và điền vào)." };
+  if (file.size > MAX_IMPORT_BYTES) return { ok: false, error: "File quá lớn (tối đa 3MB)." };
+  const commit = formData.get("commit") === "1";
+
+  const sb = await createClient();
+  const categories = await listCategories();
+  const { products, errors } = await parseWorkbook(await file.arrayBuffer(), categories);
+  const rowErrors: RowError[] = [...errors];
+  if (products.length === 0 || rowErrors.some((e) => e.row === 0 || e.row === 1)) return { ok: false, error: rowErrors[0]?.message ?? "File không hợp lệ.", rowErrors };
+
+  // Đối chiếu với DB: sản phẩm đã có (theo slug) và SKU đã dùng
+  const slugs = products.map((p) => p.slug);
+  const skus = products.flatMap((p) => p.variants.map((v) => v.sku));
+  const [exProducts, exVariants] = await Promise.all([
+    Promise.all(chunk(slugs, 100).map((c) => sb.from("products").select("id,slug").in("slug", c))),
+    Promise.all(chunk(skus, 100).map((c) => sb.from("product_variants").select("id,sku,product_id").in("sku", c))),
+  ]);
+  for (const r of [...exProducts, ...exVariants]) if (r.error) return { ok: false, error: dbError(r.error) };
+  const prodBySlug = new Map(exProducts.flatMap((r) => r.data ?? []).map((p) => [p.slug as string, p.id as string]));
+  const varBySku = new Map(exVariants.flatMap((r) => r.data ?? []).map((v) => [v.sku as string, v as { id: string; sku: string; product_id: string }]));
+
+  for (const p of products) {
+    const id = prodBySlug.get(p.slug);
+    if (!id) {
+      if (!p.category_id) rowErrors.push({ row: p.firstRow, message: `Sản phẩm mới "${p.name}" thiếu Danh mục.` });
+      if (p.images.length === 0) rowErrors.push({ row: p.firstRow, message: `Sản phẩm mới "${p.name}" thiếu Ảnh.` });
+      if (!p.short_description) rowErrors.push({ row: p.firstRow, message: `Sản phẩm mới "${p.name}" thiếu Mô tả ngắn.` });
+      if (!p.name) rowErrors.push({ row: p.firstRow, message: "Thiếu Tên sản phẩm." });
+      if (p.variants.length === 0) rowErrors.push({ row: p.firstRow, message: `Sản phẩm "${p.name}" chưa có phiên bản hợp lệ.` });
+    }
+    for (const v of p.variants) {
+      const hit = varBySku.get(v.sku);
+      if (hit && hit.product_id !== id) rowErrors.push({ row: v.row, message: `SKU "${v.sku}" đã thuộc sản phẩm khác.` });
+    }
+  }
+  rowErrors.sort((a, b) => a.row - b.row);
+  if (rowErrors.length) return { ok: false, error: `Có ${rowErrors.length} lỗi. Sửa file rồi tải lại.`, rowErrors };
+
+  const summary = {
+    created: products.filter((p) => !prodBySlug.has(p.slug)).length,
+    updated: products.filter((p) => prodBySlug.has(p.slug)).length,
+    variants: products.reduce((n, p) => n + p.variants.length, 0),
+    products: products.map((p) => ({ name: p.name || p.slug, slug: p.slug, isNew: !prodBySlug.has(p.slug), variants: p.variants.length })),
+  };
+  if (!commit) return { ok: true, committed: false, summary };
+
+  // ── Ghi vào DB (PostgREST không có transaction: đã kiểm tra kỹ ở trên để giảm tối đa lỗi giữa chừng)
+  const base = (p: ParsedProduct) => {
+    const r: Record<string, unknown> = {};
+    if (p.name) r.name = p.name;
+    if (p.category_id) r.category_id = p.category_id;
+    if (p.short_description !== null) r.short_description = p.short_description;
+    if (p.status) r.status = p.status;
+    if (p.is_featured !== null) r.is_featured = p.is_featured;
+    if (p.hero_material !== null) r.hero_material = p.hero_material;
+    if (p.usage_instructions !== null) r.usage_instructions = p.usage_instructions;
+    if (p.storage_instructions !== null) r.storage_instructions = p.storage_instructions;
+    if (p.warnings !== null) r.warnings = p.warnings;
+    if (p.shelf_life_months !== null) r.shelf_life_months = p.shelf_life_months;
+    if (p.pao_months !== null) r.pao_months = p.pao_months;
+    return r;
+  };
+  const ids = new Map(prodBySlug);
+  const fresh = products.filter((p) => !prodBySlug.has(p.slug));
+  for (const c of chunk(fresh, 100)) {
+    const { data, error } = await sb.from("products").insert(c.map((p) => ({ slug: p.slug, kind: "single", status: "draft", is_featured: false, ...base(p) }))).select("id,slug");
+    if (error) return { ok: false, error: `${dbError(error)} (đã dừng khi tạo sản phẩm mới).` };
+    for (const d of data ?? []) ids.set(d.slug as string, d.id as string);
+  }
+  for (const c of chunk(products.filter((p) => prodBySlug.has(p.slug)), 10)) {
+    const rs = await Promise.all(c.map((p) => (Object.keys(base(p)).length ? sb.from("products").update(base(p)).eq("id", ids.get(p.slug)!) : Promise.resolve({ error: null }))));
+    for (const r of rs) if (r.error) return { ok: false, error: `${dbError(r.error)} (đã dừng khi cập nhật sản phẩm).` };
+  }
+
+  const newVars: Record<string, unknown>[] = [];
+  const upVars: { id: string; row: Record<string, unknown> }[] = [];
+  for (const p of products) {
+    for (const v of p.variants) {
+      const row: Record<string, unknown> = { sku: v.sku, size_value: v.size_value, size_unit: v.size_unit, price_vnd: v.price_vnd };
+      if (v.stock_qty !== null) row.stock_qty = v.stock_qty;
+      const hit = varBySku.get(v.sku);
+      if (hit) upVars.push({ id: hit.id, row: { ...row, is_active: true } });
+      else newVars.push({ ...row, stock_qty: v.stock_qty ?? 0, is_active: true, product_id: ids.get(p.slug) });
+    }
+  }
+  for (const c of chunk(newVars, 200)) {
+    const { error } = await sb.from("product_variants").insert(c);
+    if (error) return { ok: false, error: `${dbError(error)} (đã dừng khi tạo phiên bản).` };
+  }
+  for (const c of chunk(upVars, 10)) {
+    const rs = await Promise.all(c.map((u) => sb.from("product_variants").update(u.row).eq("id", u.id)));
+    for (const r of rs) if (r.error) return { ok: false, error: `${dbError(r.error)} (đã dừng khi cập nhật phiên bản).` };
+  }
+
+  // Ảnh: sản phẩm nào có link trong file thì thay toàn bộ (ảnh đầu = ảnh chính)
+  const withImg = products.filter((p) => p.images.length > 0);
+  for (const c of chunk(withImg, 50)) {
+    const pids = c.map((p) => ids.get(p.slug)!);
+    const del = await sb.from("product_images").delete().in("product_id", pids);
+    if (del.error) return { ok: false, error: `${dbError(del.error)} (đã dừng khi cập nhật ảnh).` };
+    const { error } = await sb.from("product_images").insert(c.flatMap((p) => p.images.map((image_url, i) => ({ product_id: ids.get(p.slug), image_url, sort_order: i, is_primary: i === 0 }))));
+    if (error) return { ok: false, error: `${dbError(error)} (đã dừng khi lưu ảnh).` };
+  }
+  return { ok: true, committed: true, summary };
 }

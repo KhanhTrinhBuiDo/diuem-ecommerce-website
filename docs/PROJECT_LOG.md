@@ -226,3 +226,7 @@ npm run typecheck && npm run build
 - #34 Schema chưa có bảng đánh giá/banner/cài đặt; `order_status` chưa có "returned".
 - #35 Chưa trừ tồn kho khi đặt/hủy đơn và chưa xử lý thanh toán online.
 - #36 Mật khẩu admin chung `Admin@123` yếu → đổi sau lần đăng nhập đầu.
+| 2026-11-06 | Claude | **Tăng tốc admin + nhập sản phẩm bằng Excel.** Tốc độ: `getAdmin()` dùng `cache()` (layout/page/action chỉ kiểm tra 1 lần) và chạy `is_admin` + tên song song; middleware chỉ làm mới phiên khi có cookie `sb-*` và dùng `getClaims()` (xác thực JWT tại chỗ); dashboard gộp truy vấn; `saveProduct` ghi phiên bản song song/chèn hàng loạt. Khuyến nghị đặt Function Region Vercel gần Supabase (mục 7 hướng dẫn). Nhập Excel: `exceljs`; file mẫu động `/<slug>/san-pham/mau-nhap` (cột hồng bắt buộc/hiển thị, cột xám tùy chọn, danh sách chọn danh mục/đơn vị/trạng thái, sheet Hướng dẫn); server action `importProducts` (kiểm tra thử → nhập, gộp dòng cùng slug thành nhiều phiên bản, upsert theo slug/SKU, ảnh tách bằng dấu cách/phẩy/xuống dòng, ảnh đầu là ảnh chính, chỉ link Cloudinary, ≤500 dòng, ≤3MB). Kiểm thử: tsc + build OK; bộ đọc file thử với dữ liệu đúng/sai (báo lỗi theo dòng, tách link giữ dấu phẩy trong link Cloudinary); route mẫu 404 khi chưa đăng nhập. **Chưa thử với Supabase thật.** Lưu ý: nhập không nằm trong 1 transaction (PostgREST) nên đã kiểm tra kỹ trước khi ghi |
+
+- #37 Nhập Excel chưa hỗ trợ combo (bundle_items) và chưa có chế độ xuất danh sách sản phẩm hiện có ra Excel.
+

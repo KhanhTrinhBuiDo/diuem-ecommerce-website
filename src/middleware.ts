@@ -27,7 +27,8 @@ export async function middleware(req: NextRequest) {
     res = NextResponse.next();
   }
 
-  if (isSupabaseConfigured()) {
+  // Chỉ làm mới phiên khi request có cookie đăng nhập (khách chưa đăng nhập không tốn lượt gọi Supabase)
+  if (isSupabaseConfigured() && req.cookies.getAll().some((c) => c.name.startsWith("sb-"))) {
     const sb = createServerClient(supabaseUrl, supabaseAnonKey, {
       cookies: {
         getAll: () => req.cookies.getAll(),
@@ -37,7 +38,7 @@ export async function middleware(req: NextRequest) {
         },
       },
     });
-    await sb.auth.getUser();
+    await sb.auth.getClaims(); // xác thực JWT tại chỗ, chỉ gọi mạng khi cần làm mới token
   }
   return res;
 }

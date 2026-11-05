@@ -105,12 +105,13 @@ const dayKey = (iso: string) => new Date(iso).toLocaleDateString("en-CA", { time
 export async function getDashboard() {
   const sb = await createClient();
   const since = new Date(Date.now() - 14 * 86400_000).toISOString();
-  const [{ data: recent }, { data: lines }, { data: variants }, { count: customers }, { data: latest }] = await Promise.all([
+  const [{ data: recent }, { data: lines }, { data: variants }, { count: customers }, { data: latest }, { count: pendingCount }] = await Promise.all([
     sb.from("orders").select("placed_at,total_vnd,status").gte("placed_at", since),
     sb.from("order_items").select("product_name,quantity,orders!inner(status,placed_at)").gte("orders.placed_at", new Date(Date.now() - 90 * 86400_000).toISOString()).neq("orders.status", "cancelled"),
     sb.from("product_variants").select("sku,stock_qty,products!inner(name,status,deleted_at)").eq("is_active", true).lte("stock_qty", 10).eq("products.status", "active").is("products.deleted_at", null),
     sb.from("customers").select("id", { count: "exact", head: true }),
     sb.from("orders").select("id,order_number,contact_name,total_vnd,status,placed_at").order("placed_at", { ascending: false }).limit(5),
+    sb.from("orders").select("id", { count: "exact", head: true }).eq("status", "pending"),
   ]);
 
   const days: { d: string; v: number }[] = [];
@@ -125,7 +126,7 @@ export async function getDashboard() {
   }
   const top = new Map<string, number>();
   for (const l of lines ?? []) top.set(l.product_name, (top.get(l.product_name) ?? 0) + l.quantity);
-  const pending = (await sb.from("orders").select("id", { count: "exact", head: true }).eq("status", "pending")).count ?? 0;
+  const pending = pendingCount ?? 0;
 
   return {
     series: days.map((x) => ({ d: x.d.slice(8, 10) + "/" + x.d.slice(5, 7), v: x.v })),

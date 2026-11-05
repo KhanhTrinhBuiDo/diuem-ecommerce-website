@@ -36,3 +36,14 @@ Trong form sản phẩm, dán link dạng `https://res.cloudinary.com/<cloud>/im
 
 ## 6. Việc admin làm được
 Dashboard; sản phẩm (thêm/sửa, biến thể, ảnh, **xóa mềm/khôi phục**); đơn hàng (đổi trạng thái theo luồng, mã vận đơn, in); danh mục; voucher; xem khách hàng; xem danh sách admin.
+
+## 7. Admin chậm? Đặt vùng chạy Vercel gần Supabase
+Nguyên nhân chính thường là Vercel Functions chạy ở Mỹ (mặc định `iad1`) còn Supabase ở Singapore → mỗi truy vấn tốn ~200–300ms. Cách sửa: Vercel → Project → Settings → **Functions → Function Region** chọn vùng gần Supabase (Supabase ở Singapore → `sin1`), rồi Redeploy. Xem vùng Supabase tại Project Settings → General.
+
+## 8. Nhập sản phẩm bằng Excel
+Admin → Sản phẩm → **Nhập từ Excel** → tải file mẫu (.xlsx, có sheet Danh mục, Hướng dẫn, ví dụ) → điền → chọn file → **Kiểm tra** → **Nhập vào hệ thống**.
+- Cột hồng (*) hiển thị trên web, bắt buộc với sản phẩm mới: Tên, Danh mục, Dung tích, Đơn vị, Giá, Ảnh, Mô tả ngắn.
+- Cột xám không bắt buộc: SKU, Tồn kho, Slug, Trạng thái (mặc định Nháp), Nổi bật, Thành phần, Hướng dẫn sử dụng/bảo quản, Lưu ý, Hạn dùng, PAO.
+- Nhiều ảnh trong 1 ô: cách nhau bằng dấu cách, dấu phẩy hoặc xuống dòng; link đầu là ảnh chính.
+- Nhiều dòng cùng Tên/Slug = 1 sản phẩm nhiều phiên bản. Slug đã có = cập nhật (ô trống giữ nguyên); phiên bản khớp theo SKU.
+- Tối đa 500 dòng, file ≤ 3MB. Combo chưa hỗ trợ qua file.
