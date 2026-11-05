@@ -1,0 +1,27 @@
+@import "tailwindcss";
+
+/* Design tokens lấy từ Figma */
+@theme inline {
+  --color-brand: #cc3f78;   /* chữ "Dịu Em", màu thương hiệu */
+  --color-line: #ff66c4;    /* line-top dưới header */
+  --color-ink: #160e13;     /* viền ô tìm kiếm */
+  --color-muted: #8f8f8f;   /* icon breadcrumb */
+  --color-rule: #d9d9d9;    /* đường kẻ trong footer */
+  --font-script: "Momo Signature", cursive; /* nạp bằng <link> trong layout.tsx */
+  --font-sans: var(--font-unbounded), ui-sans-serif, system-ui, sans-serif;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: #fff;
+  color: #000;
+  font-family: var(--font-sans);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand);
+  outline-offset: 3px;
+}
