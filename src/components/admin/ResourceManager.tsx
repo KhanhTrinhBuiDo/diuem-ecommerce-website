@@ -1,6 +1,7 @@
 "use client";
 
-import { useMemo, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Dialog, Field, PageHeader, SearchInput, Table, Toggle } from "@/components/admin/ui";
 import { btn, inputCls } from "@/components/admin/shared";
 
@@ -11,6 +12,8 @@ export type FieldDef<T> = {
   options?: { value: string; label: string }[];
   required?: boolean;
   min?: number;
+  /** Khóa khi sửa (vd mã voucher là khóa chính) */
+  lockOnEdit?: boolean;
 };
 export type Column<T> = { header: string; render: (item: T) => ReactNode };
 export type Filter<T> = { label: string; options: { value: string; label: string }[]; match: (item: T, value: string) => boolean };
@@ -29,19 +32,26 @@ type Props<T extends { id: string }> = {
   extraActions?: (item: T, update: (patch: Partial<T>) => void) => ReactNode;
   canDelete?: (item: T) => boolean;
   headerExtra?: ReactNode;
+  /** Có onSave/onRemove → ghi dữ liệu thật qua server action (trả về chuỗi lỗi hoặc null) */
+  onSave?: (item: T, isNew: boolean) => Promise<string | null>;
+  onRemove?: (item: T) => Promise<string | null>;
 };
 
 /**
  * Bảng quản lý CRUD dùng chung (sản phẩm, danh mục, voucher, banner, nhân viên).
  * Dữ liệu chỉ nằm trên trình duyệt (mock). TODO(supabase): thay setItems bằng server action + revalidate.
  */
-export function ResourceManager<T extends { id: string }>({ title, subtitle, noun, initial, columns, fields, blank, searchText, filter, extraActions, canDelete, headerExtra }: Props<T>) {
+export function ResourceManager<T extends { id: string }>({ title, subtitle, noun, initial, columns, fields, blank, searchText, filter, extraActions, canDelete, headerExtra, onSave, onRemove }: Props<T>) {
+  const router = useRouter();
   const [items, setItems] = useState<T[]>(initial);
   const [q, setQ] = useState("");
   const [f, setF] = useState("");
   const [editing, setEditing] = useState<{ item: T; isNew: boolean } | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [confirm, setConfirm] = useState<T | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [formError, setFormError] = useState("");
+  useEffect(() => setItems(initial), [initial]);
 
   const shown = useMemo(() => {
     const needle = q.trim().toLowerCase();
@@ -50,7 +60,7 @@ export function ResourceManager<T extends { id: string }>({ title, subtitle, nou
 
   const update = (id: string, patch: Partial<T>) => setItems((l) => l.map((i) => (i.id === id ? { ...i, ...patch } : i)));
 
-  function save(e: React.FormEvent) {
+  async function save(e: React.FormEvent) {
     e.preventDefault();
     if (!editing) return;
     const er: Record<string, string> = {};
@@ -61,6 +71,16 @@ export function ResourceManager<T extends { id: string }>({ title, subtitle, nou
     }
     setErrors(er);
     if (Object.keys(er).length) return;
+    if (onSave) {
+      setBusy(true);
+      setFormError("");
+      const msg = await onSave(editing.item, editing.isNew);
+      setBusy(false);
+      if (msg) return setFormError(msg);
+      setEditing(null);
+      router.refresh();
+      return;
+    }
     setItems((l) => (editing.isNew ? [{ ...editing.item, id: `n${Date.now()}` }, ...l] : l.map((i) => (i.id === editing.item.id ? editing.item : i))));
     setEditing(null);
   }
@@ -74,7 +94,7 @@ export function ResourceManager<T extends { id: string }>({ title, subtitle, nou
         actions={
           <>
             {headerExtra}
-            <button type="button" className={btn.primary} onClick={() => { setErrors({}); setEditing({ item: blank(), isNew: true }); }}>
+            <button type="button" className={btn.primary} onClick={() => { setErrors({}); setFormError(""); setEditing({ item: blank(), isNew: true }); }}>
               + Thêm {noun}
             </button>
           </>
@@ -107,7 +127,7 @@ export function ResourceManager<T extends { id: string }>({ title, subtitle, nou
             <td>
               <div className="flex flex-wrap items-center gap-2">
                 {extraActions?.(item, (p) => update(item.id, p))}
-                <button type="button" className={btn.small} onClick={() => { setErrors({}); setEditing({ item: { ...item }, isNew: false }); }}>
+                <button type="button" className={btn.small} onClick={() => { setErrors({}); setFormError(""); setEditing({ item: { ...item }, isNew: false }); }}>
                   Sửa
                 </button>
                 {(canDelete?.(item) ?? true) && (
@@ -137,7 +157,7 @@ export function ResourceManager<T extends { id: string }>({ title, subtitle, nou
                   ) : (
                     <Field label={fd.label} error={errors[fd.key]}>
                       {fd.type === "select" ? (
-                        <select value={String(v ?? "")} onChange={(e) => set(fd.key, e.target.value)} className={inputCls}>
+                        <select disabled={fd.lockOnEdit && !editing.isNew} value={String(v ?? "")} onChange={(e) => set(fd.key, e.target.value)} className={inputCls}>
                           {fd.options?.map((o) => (
                             <option key={o.value} value={o.value}>
                               {o.label}
@@ -149,32 +169,50 @@ export function ResourceManager<T extends { id: string }>({ title, subtitle, nou
                       ) : fd.type === "number" ? (
                         <input type="number" min={fd.min ?? 0} value={typeof v === "number" && !Number.isNaN(v) ? v : ""} onChange={(e) => set(fd.key, e.target.value === "" ? NaN : Number(e.target.value))} className={inputCls} />
                       ) : (
-                        <input type={fd.type} value={String(v ?? "")} onChange={(e) => set(fd.key, e.target.value)} className={inputCls} />
+                        <input type={fd.type} readOnly={fd.lockOnEdit && !editing.isNew} value={String(v ?? "")} onChange={(e) => set(fd.key, e.target.value)} className={inputCls} />
                       )}
                     </Field>
                   )}
                 </div>
               );
             })}
+            {formError && <p role="alert" className="text-sm text-red-600 sm:col-span-2">{formError}</p>}
             <div className="flex justify-end gap-3 sm:col-span-2">
               <button type="button" className={btn.outline} onClick={() => setEditing(null)}>
                 Hủy
               </button>
-              <button type="submit" className={btn.primary}>
-                Lưu
+              <button type="submit" disabled={busy} className={btn.primary}>
+                {busy ? "Đang lưu..." : "Lưu"}
               </button>
             </div>
           </form>
         )}
       </Dialog>
 
-      <Dialog open={!!confirm} onClose={() => setConfirm(null)} title={`Xóa ${noun}?`}>
+      <Dialog open={!!confirm} onClose={() => { setConfirm(null); setFormError(""); }} title={`Xóa ${noun}?`}>
         <p className="text-sm font-light">Thao tác này không thể hoàn tác. Bạn chắc chắn muốn xóa mục đã chọn?</p>
         <div className="mt-5 flex justify-end gap-3">
           <button type="button" className={btn.outline} onClick={() => setConfirm(null)}>
             Hủy
           </button>
-          <button type="button" className={btn.danger} onClick={() => { if (confirm) setItems((l) => l.filter((i) => i.id !== confirm.id)); setConfirm(null); }}>
+          {formError && <p role="alert" className="mr-auto text-sm text-red-600">{formError}</p>}
+          <button
+            type="button"
+            className={btn.danger}
+            disabled={busy}
+            onClick={async () => {
+              if (!confirm) return;
+              if (onRemove) {
+                setBusy(true);
+                const msg = await onRemove(confirm);
+                setBusy(false);
+                if (msg) return setFormError(msg);
+                router.refresh();
+              } else setItems((l) => l.filter((i) => i.id !== confirm.id));
+              setFormError("");
+              setConfirm(null);
+            }}
+          >
             Xóa
           </button>
         </div>

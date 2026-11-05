@@ -8,10 +8,11 @@ import { UserIcon } from "@/components/ui/icons";
 /**
  * Icon tài khoản + menu nhỏ (Figma "Noti - Tài khoản"): Tài khoản của bạn / Tra cứu đơn hàng / Câu hỏi thường gặp.
  * TODO(figma): mục thứ 3 trong Figma ghi "Chính sách Câu hỏi thường gặp" – đang dùng "Câu hỏi thường gặp".
- * TODO(auth): chưa đăng nhập → "Tài khoản của bạn" nên mở popup đăng nhập; hàng "Đăng nhập / Đăng ký" bên dưới là tạm (không có trong Figma).
+ * Hàng cuối (Đăng nhập / Đăng xuất) không có trong Figma – thêm để dùng được với Supabase Auth.
+ * TODO(auth): chưa đăng nhập → "Tài khoản của bạn" nên mở popup đăng nhập; trang /tai-khoan vẫn hiện dữ liệu mẫu.
  */
 export function AccountButton() {
-  const { open: openAuth } = useAuthModal();
+  const { open: openAuth, user, signOut } = useAuthModal();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -45,9 +46,15 @@ export function AccountButton() {
               {rule}
               <Link role="menuitem" href="/tai-khoan/cau-hoi-thuong-gap" onClick={() => setOpen(false)} className={row}>Câu hỏi thường gặp</Link>
               {rule}
-              <button role="menuitem" type="button" onClick={() => { setOpen(false); openAuth("login"); }} className={`${row} text-left`}>
-                Đăng nhập / Đăng ký
-              </button>
+              {user ? (
+                <button role="menuitem" type="button" onClick={() => { setOpen(false); void signOut(); }} className={`${row} text-left`}>
+                  Đăng xuất{user.name ? ` (${user.name})` : ""}
+                </button>
+              ) : (
+                <button role="menuitem" type="button" onClick={() => { setOpen(false); openAuth("login"); }} className={`${row} text-left`}>
+                  Đăng nhập / Đăng ký
+                </button>
+              )}
             </div>
           </div>
         </div>

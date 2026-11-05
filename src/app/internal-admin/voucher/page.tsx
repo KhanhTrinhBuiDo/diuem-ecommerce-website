@@ -1,8 +1,11 @@
-import type { Metadata } from "next";
-import { VouchersManager } from "@/components/admin/Managers";
+import { requireAdmin } from "@/lib/admin-auth";
+import { listCoupons } from "@/lib/admin-data";
+import { CouponsAdmin } from "@/components/admin/SimpleManagers";
 
-export const metadata: Metadata = { title: "Voucher" };
+export const dynamic = "force-dynamic";
+export const metadata = { title: "Voucher" };
 
-export default function Page() {
-  return <VouchersManager />;
+export default async function Page() {
+  await requireAdmin();
+  return <CouponsAdmin coupons={await listCoupons()} />;
 }

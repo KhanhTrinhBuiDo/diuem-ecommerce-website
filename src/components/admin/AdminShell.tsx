@@ -4,16 +4,19 @@ import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { useAdminBase } from "@/components/admin/AdminBase";
 import { AdminNav } from "@/components/admin/AdminNav";
+import { createClient } from "@/lib/supabase/client";
 import { LogoMark } from "@/components/ui/LogoMark";
 
 /**
  * Khung trang quản trị: thanh trên (logo, "Xem cửa hàng", tài khoản admin) + menu trái 280px.
  * Mobile: menu trượt ra bằng nút ☰.
- * TODO(auth): tên/email admin lấy từ phiên đăng nhập; nút Đăng xuất gọi Supabase signOut.
  */
-export function AdminShell({ children }: { children: ReactNode }) {
+export function AdminShell({ children, name, email }: { children: ReactNode; name: string; email: string }) {
   const [open, setOpen] = useState(false);
   const base = useAdminBase();
+  async function signOut() {
+    try { await createClient().auth.signOut(); } finally { window.location.assign("/"); }
+  }
   return (
     <div className="min-h-screen bg-[#f6f4f5]">
       <header className="sticky top-0 z-30 border-b-[6px] border-line bg-white">
@@ -37,12 +40,12 @@ export function AdminShell({ children }: { children: ReactNode }) {
               Xem cửa hàng
             </Link>
             <span className="hidden text-right leading-tight sm:block">
-              <span className="block font-bold">Lê Phước Thịnh</span>
-              <span className="block text-[11px] font-light text-black/60">Admin</span>
+              <span className="block font-bold">{name}</span>
+              <span className="block text-[11px] font-light text-black/60">{email}</span>
             </span>
-            <Link href="/" className="rounded-full bg-black px-4 py-1.5 font-bold text-white hover:opacity-80">
+            <button type="button" onClick={signOut} className="rounded-full bg-black px-4 py-1.5 font-bold text-white hover:opacity-80">
               Đăng xuất
-            </Link>
+            </button>
           </div>
         </div>
       </header>

@@ -1,115 +1,91 @@
-import type { Metadata } from "next";
 import Link from "next/link";
+import { requireAdmin } from "@/lib/admin-auth";
+import { getDashboard } from "@/lib/admin-data";
 import { getAdminBase } from "@/lib/admin-path";
-import { Badge, Card, PageHeader, StatCard } from "@/components/admin/ui";
-import { btn, money } from "@/components/admin/shared";
-import { adminCustomers, adminOrders, adminProducts, adminReviews, orderStatusText, orderTotal, revenueSeries, type AdminOrderStatus } from "@/data/admin";
+import { orderStatusText, type OrderStatus } from "@/lib/admin-types";
+import { Badge, Card, PageHeader, StatCard, Table } from "@/components/admin/ui";
+import { money } from "@/components/admin/shared";
 
-export const metadata: Metadata = { title: "Dashboard" };
+export const dynamic = "force-dynamic";
+export const metadata = { title: "Tổng quan" };
 
-const statusTone = { pending: "amber", confirmed: "blue", shipping: "pink", completed: "green", cancelled: "gray", returned: "red" } as const;
+const tone = { pending: "amber", confirmed: "blue", shipping: "pink", completed: "green", cancelled: "gray" } as const;
 
-/** Dashboard: số liệu tính từ dữ liệu mẫu trong src/data/admin.ts. TODO(supabase): thay bằng truy vấn tổng hợp (view/RPC) theo khoảng ngày. */
-export default function Page() {
+function RevenueChart({ series }: { series: { d: string; v: number }[] }) {
+  const W = 640, H = 200, P = 24;
+  const max = Math.max(1, ...series.map((s) => s.v));
+  const bw = (W - P * 2) / series.length;
+  return (
+    <figure>
+      <svg viewBox={`0 0 ${W} ${H + 24}`} role="img" aria-label="Doanh thu 14 ngày gần nhất" className="h-auto w-full">
+        <line x1={P} x2={W - P} y1={H} y2={H} stroke="#000" strokeWidth="1" />
+        {series.map((s, i) => {
+          const h = (s.v / max) * (H - 16);
+          return (
+            <g key={i}>
+              <rect x={P + i * bw + 4} y={H - h} width={bw - 8} height={Math.max(h, s.v ? 2 : 0)} rx="3" fill="#FF66C4" stroke="#000" strokeWidth="1" />
+              <text x={P + i * bw + bw / 2} y={H + 16} textAnchor="middle" fontSize="10" fill="#000">{s.d}</text>
+            </g>
+          );
+        })}
+      </svg>
+      <figcaption className="sr-only">
+        <table>
+          <thead><tr><th>Ngày</th><th>Doanh thu</th></tr></thead>
+          <tbody>{series.map((s) => <tr key={s.d}><td>{s.d}</td><td>{money(s.v)}</td></tr>)}</tbody>
+        </table>
+      </figcaption>
+    </figure>
+  );
+}
+
+export default async function Page() {
+  await requireAdmin();
   const base = getAdminBase() ?? "";
-  const total14 = revenueSeries.reduce((s, x) => s + x.v, 0);
-  const today = revenueSeries[revenueSeries.length - 1].v;
-  const pending = adminOrders.filter((o) => o.status === "pending").length;
-  const pendingReviews = adminReviews.filter((r) => r.status === "pending").length;
-  const lowStock = adminProducts.filter((p) => p.status !== "hidden" && p.stock <= 10);
-  const top = [...adminProducts].sort((a, b) => b.sold - a.sold).slice(0, 5);
-  const byStatus = (Object.keys(orderStatusText) as AdminOrderStatus[]).map((k) => ({ k, n: adminOrders.filter((o) => o.status === k).length }));
-  const maxStatus = Math.max(...byStatus.map((x) => x.n), 1);
-  const max = Math.max(...revenueSeries.map((x) => x.v));
-  const W = 700, H = 220, pad = 28, bw = (W - pad * 2) / revenueSeries.length;
-
+  const d = await getDashboard();
   return (
     <>
-      <PageHeader title="Dashboard" subtitle="Tổng quan hoạt động cửa hàng (dữ liệu mẫu)" actions={<Link href={`${base}/san-pham`} className={btn.primary}>+ Thêm sản phẩm</Link>} />
-
-      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard tone="dark" label="Doanh thu 14 ngày" value={money(total14)} hint={`Hôm nay: ${money(today)}`} />
-        <StatCard tone="pink" label="Đơn chờ xác nhận" value={String(pending)} hint={`${adminOrders.length} đơn gần đây`} />
-        <StatCard label="Khách hàng" value={String(adminCustomers.length)} hint="Tài khoản đã đăng ký" />
-        <StatCard label="Đánh giá chờ duyệt" value={String(pendingReviews)} hint={`${lowStock.length} sản phẩm sắp hết hàng`} />
+      <PageHeader title="Tổng quan" subtitle="Số liệu lấy trực tiếp từ cơ sở dữ liệu (không tính đơn đã hủy vào doanh thu)." />
+      <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
+        <StatCard tone="pink" label="Doanh thu hôm nay" value={money(d.revenueToday)} />
+        <StatCard label="Doanh thu 14 ngày" value={money(d.revenue14)} hint={`${d.orders14} đơn`} />
+        <StatCard tone="dark" label="Đơn chờ xác nhận" value={String(d.pending)} />
+        <StatCard label="Khách hàng" value={String(d.customers)} />
       </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-        <Card title="Doanh thu theo ngày">
-          <svg viewBox={`0 0 ${W} ${H + 24}`} role="img" aria-label={`Biểu đồ cột doanh thu 14 ngày, cao nhất ${money(max)}`} className="w-full">
-            {[0, 0.5, 1].map((t) => (
-              <line key={t} x1={pad} x2={W - pad} y1={H - t * (H - 20)} y2={H - t * (H - 20)} stroke="#d9d9d9" strokeDasharray="4 4" />
-            ))}
-            {revenueSeries.map((x, i) => {
-              const h = (x.v / max) * (H - 20);
-              const last = i === revenueSeries.length - 1;
-              return (
-                <g key={x.d}>
-                  <rect x={pad + i * bw + 5} y={H - h} width={bw - 10} height={h} rx="4" fill={last ? "#000" : "#ff66c4"}>
-                    <title>{`${x.d}: ${money(x.v)}`}</title>
-                  </rect>
-                  <text x={pad + i * bw + bw / 2} y={H + 16} textAnchor="middle" fontSize="10" fill="#555">{x.d.slice(0, 5)}</text>
-                </g>
-              );
-            })}
-          </svg>
-          <table className="sr-only">
-            <caption>Doanh thu theo ngày</caption>
-            <tbody>{revenueSeries.map((x) => <tr key={x.d}><th scope="row">{x.d}</th><td>{money(x.v)}</td></tr>)}</tbody>
-          </table>
-        </Card>
-
-        <Card title="Đơn hàng theo trạng thái">
-          <ul className="flex flex-col gap-3">
-            {byStatus.map(({ k, n }) => (
-              <li key={k} className="text-sm">
-                <div className="mb-1 flex justify-between"><span>{orderStatusText[k]}</span><strong>{n}</strong></div>
-                <div className="h-2.5 rounded-full bg-black/10"><div className="h-full rounded-full bg-black" style={{ width: `${(n / maxStatus) * 100}%` }} /></div>
+      <div className="mt-6 grid grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
+        <Card title="Doanh thu 14 ngày"><RevenueChart series={d.series} /></Card>
+        <Card title="Đơn theo trạng thái (14 ngày)">
+          <ul className="flex flex-col gap-2 text-sm">
+            {(Object.keys(orderStatusText) as OrderStatus[]).map((s) => (
+              <li key={s} className="flex items-center justify-between">
+                <Badge tone={tone[s]}>{orderStatusText[s]}</Badge>
+                <b>{d.byStatus[s] ?? 0}</b>
               </li>
             ))}
           </ul>
         </Card>
       </div>
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-2">
-        <Card title="Đơn hàng mới nhất" action={<Link href={`${base}/don-hang`} className="text-sm font-medium underline">Xem tất cả</Link>}>
-          <ul className="flex flex-col divide-y divide-rule">
-            {adminOrders.slice(0, 5).map((o) => (
-              <li key={o.id} className="flex items-center justify-between gap-3 py-3 text-sm">
-                <div className="min-w-0"><p className="font-medium">{o.customer}</p><p className="text-xs font-light text-black/50">{o.code}</p></div>
-                <div className="flex flex-none items-center gap-3"><span className="font-bold">{money(orderTotal(o))}</span><Badge tone={statusTone[o.status]}>{orderStatusText[o.status]}</Badge></div>
-              </li>
+      <div className="mt-6 grid grid-cols-[minmax(0,1fr)] gap-6 xl:grid-cols-2">
+        <Card title="Đơn mới nhất" action={<Link href={`${base}/don-hang`} className="text-sm underline">Xem tất cả</Link>}>
+          <Table head={["Mã", "Khách", "Tổng", "Trạng thái"]} empty={d.latest.length ? undefined : "Chưa có đơn hàng."}>
+            {d.latest.map((o) => (
+              <tr key={o.id}><td className="font-bold">{o.code}</td><td>{o.name}</td><td>{money(o.total)}</td><td><Badge tone={tone[o.status]}>{orderStatusText[o.status]}</Badge></td></tr>
             ))}
-          </ul>
+          </Table>
         </Card>
-
-        <Card title="Sản phẩm bán chạy" action={<Link href={`${base}/san-pham`} className="text-sm font-medium underline">Quản lý</Link>}>
-          <ol className="flex flex-col divide-y divide-rule">
-            {top.map((p, i) => (
-              <li key={p.id} className="flex items-center gap-3 py-3 text-sm">
-                <span className="grid size-7 flex-none place-items-center rounded-full bg-line font-bold">{i + 1}</span>
-                <span className="min-w-0 flex-1 font-medium">{p.name}</span>
-                <span className="font-light">{p.sold} đã bán</span>
-              </li>
-            ))}
-          </ol>
+        <Card title="Bán chạy (90 ngày)">
+          <Table head={["Sản phẩm", "Đã bán"]} empty={d.top.length ? undefined : "Chưa có dữ liệu."}>
+            {d.top.map((t) => <tr key={t.name}><td>{t.name}</td><td className="font-bold">{t.sold}</td></tr>)}
+          </Table>
+        </Card>
+        <Card title="Sắp hết hàng (≤ 10)" action={<Link href={`${base}/san-pham`} className="text-sm underline">Quản lý sản phẩm</Link>} className="xl:col-span-2">
+          <Table head={["SKU", "Sản phẩm", "Tồn kho"]} empty={d.lowStock.length ? undefined : "Không có mặt hàng nào sắp hết."}>
+            {d.lowStock.map((l) => <tr key={l.sku}><td><code>{l.sku}</code></td><td>{l.name}</td><td className="font-bold">{l.stock}</td></tr>)}
+          </Table>
         </Card>
       </div>
-
-      <Card title="Cảnh báo tồn kho" className="mt-6" action={<Link href={`${base}/san-pham`} className="text-sm font-medium underline">Nhập hàng</Link>}>
-        {lowStock.length === 0 ? (
-          <p className="text-sm font-light">Không có sản phẩm nào sắp hết hàng.</p>
-        ) : (
-          <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-            {lowStock.map((p) => (
-              <li key={p.id} className="flex items-center justify-between gap-3 rounded-[10px] border-2 border-black px-4 py-3 text-sm">
-                <span className="font-medium">{p.name}</span>
-                <Badge tone={p.stock === 0 ? "red" : "amber"}>{p.stock === 0 ? "Hết hàng" : `Còn ${p.stock}`}</Badge>
-              </li>
-            ))}
-          </ul>
-        )}
-      </Card>
     </>
   );
 }

@@ -1,8 +1,11 @@
-import type { Metadata } from "next";
-import { CategoriesManager } from "@/components/admin/Managers";
+import { requireAdmin } from "@/lib/admin-auth";
+import { listCategories } from "@/lib/admin-data";
+import { CategoriesAdmin } from "@/components/admin/SimpleManagers";
 
-export const metadata: Metadata = { title: "Danh mục" };
+export const dynamic = "force-dynamic";
+export const metadata = { title: "Danh mục" };
 
-export default function Page() {
-  return <CategoriesManager />;
+export default async function Page() {
+  await requireAdmin();
+  return <CategoriesAdmin categories={await listCategories()} />;
 }

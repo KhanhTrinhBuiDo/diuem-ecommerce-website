@@ -17,18 +17,10 @@ export const adminNav = [
     ],
   },
   {
-    group: "Khách hàng",
+    group: "Khách hàng & hệ thống",
     items: [
       { label: "Khách hàng", href: "/khach-hang" },
-      { label: "Đánh giá", href: "/danh-gia" },
-    ],
-  },
-  {
-    group: "Hệ thống",
-    items: [
-      { label: "Banner & nội dung", href: "/banner" },
-      { label: "Nhân viên & phân quyền", href: "/nhan-vien" },
-      { label: "Cài đặt", href: "/cai-dat" },
+      { label: "Quản trị viên", href: "/nhan-vien" },
     ],
   },
 ];

@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type FormEvent, type ReactNode } from "react";
+import { resolveAfterLogin } from "@/lib/after-login";
+import { createClient } from "@/lib/supabase/client";
+import { isSupabaseConfigured } from "@/lib/supabase/env";
 import { LogoMark } from "@/components/ui/LogoMark";
 import { CloseIcon } from "@/components/ui/icons";
 import { EyeIcon, FacebookLogo, GiftIcon, GoogleLogo } from "@/components/ui/icons2";
@@ -30,7 +33,7 @@ function PasswordInput({ name, label, autoComplete }: { name: string; label: str
   const [show, setShow] = useState(false);
   return (
     <div className="relative">
-      <input name={name} type={show ? "text" : "password"} aria-label={label} placeholder={label} autoComplete={autoComplete} required minLength={6} className={`${inputCls} pr-16`} />
+      <input name={name} type={show ? "text" : "password"} aria-label={label} placeholder={label} autoComplete={autoComplete} required minLength={8} className={`${inputCls} pr-16`} />
       <button type="button" aria-label={show ? "Ẩn mật khẩu" : "Hiện mật khẩu"} aria-pressed={show} onClick={() => setShow((s) => !s)} className="absolute right-5 top-1/2 grid size-8 -translate-y-1/2 place-items-center text-black/40 hover:text-black lg:right-[50px]">
         <EyeIcon off={show} className="size-6" />
       </button>
@@ -42,10 +45,10 @@ function PasswordInput({ name, label, autoComplete }: { name: string; label: str
  * Popup đăng nhập / đăng ký (Figma "Authen"): hộp trắng bo 30px, nút đóng đen tròn lệch góc phải-trên,
  * 3 quyền lợi, đăng nhập Google/Facebook, form email/SĐT + mật khẩu.
  *
- * PLACEHOLDER: chưa gọi Supabase → bấm gửi chỉ kiểm tra form rồi báo "chưa kết nối".
- * TODO(auth): Supabase Auth – signInWithPassword / signUp / signInWithOAuth({ provider: "google" }) / resetPasswordForEmail.
- * TODO(auth): "Email/SĐT" – đăng nhập bằng SĐT cần cấu hình SMS provider; trước mắt chỉ email.
- * TODO(auth): Facebook có trong Figma nhưng bạn chỉ yêu cầu Google – giữ nút, cần xác nhận có làm không.
+ * Đã nối Supabase Auth: email + mật khẩu (signInWithPassword / signUp) và Google (OAuth).
+ * Sau đăng nhập: tài khoản admin → chuyển vào trang quản trị bí mật; khách → ở lại cửa hàng.
+ * TODO(auth): đăng nhập bằng SĐT (cần SMS provider); luồng quên mật khẩu (resetPasswordForEmail + trang đặt lại).
+ * TODO(auth): Facebook có trong Figma nhưng chưa bật – cần xác nhận có làm không.
  */
 export function AuthModal({ mode, onModeChange, onClose }: Props) {
   const ref = useRef<HTMLDialogElement>(null);
@@ -61,16 +64,52 @@ export function AuthModal({ mode, onModeChange, onClose }: Props) {
     setNotice(null);
   }, [mode]);
 
-  const pending = () => setNotice({ kind: "ok", text: "Chức năng này sẽ hoạt động khi kết nối Supabase Auth (chưa làm)." });
+  const [busy, setBusy] = useState(false);
+  const soon = (what: string) => setNotice({ kind: "ok", text: `${what} sẽ có sớm.` });
 
-  function onSubmit(e: FormEvent<HTMLFormElement>) {
+  async function afterSession() {
+    const { redirect } = await resolveAfterLogin();
+    if (redirect) window.location.assign(redirect);
+    else {
+      onClose();
+      window.location.reload(); // làm mới dữ liệu theo phiên đăng nhập
+    }
+  }
+
+  async function google() {
+    if (!isSupabaseConfigured()) return setNotice({ kind: "err", text: "Chưa cấu hình Supabase (thiếu biến môi trường)." });
+    const { error } = await createClient().auth.signInWithOAuth({ provider: "google", options: { redirectTo: `${window.location.origin}/auth/callback` } });
+    if (error) setNotice({ kind: "err", text: "Không thể đăng nhập bằng Google. Vui lòng thử lại." });
+  }
+
+  async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const f = new FormData(e.currentTarget);
-    if (isRegister && f.get("password") !== f.get("confirm")) {
-      setNotice({ kind: "err", text: "Mật khẩu nhập lại chưa khớp." });
-      return;
+    const identity = String(f.get("identity") ?? "").trim();
+    const password = String(f.get("password") ?? "");
+    if (isRegister && password !== f.get("confirm")) return setNotice({ kind: "err", text: "Mật khẩu nhập lại chưa khớp." });
+    if (!identity.includes("@")) return setNotice({ kind: "err", text: "Hiện chỉ hỗ trợ đăng nhập bằng email." });
+    if (!isSupabaseConfigured()) return setNotice({ kind: "err", text: "Chưa cấu hình Supabase (thiếu biến môi trường)." });
+    setBusy(true);
+    setNotice(null);
+    try {
+      const sb = createClient();
+      if (isRegister) {
+        const { data, error } = await sb.auth.signUp({
+          email: identity,
+          password,
+          options: { data: { full_name: String(f.get("name") ?? "").trim() }, emailRedirectTo: `${window.location.origin}/auth/callback` },
+        });
+        if (error) return setNotice({ kind: "err", text: error.message.includes("registered") ? "Email này đã được đăng ký." : "Không thể đăng ký. Vui lòng kiểm tra thông tin." });
+        if (data.session) return await afterSession();
+        return setNotice({ kind: "ok", text: "Đăng ký thành công! Vui lòng kiểm tra email để xác nhận tài khoản." });
+      }
+      const { error } = await sb.auth.signInWithPassword({ email: identity, password });
+      if (error) return setNotice({ kind: "err", text: "Email hoặc mật khẩu không đúng." });
+      await afterSession();
+    } finally {
+      setBusy(false);
     }
-    pending(); // TODO(auth)
   }
 
   return (
@@ -116,10 +155,10 @@ export function AuthModal({ mode, onModeChange, onClose }: Props) {
               <section aria-label="Đăng nhập nhanh" className="flex flex-col gap-[11px]">
                 <h3 className="text-[clamp(14px,1.04vw,18px)] font-medium">Đăng nhập hoặc đăng ký (miễn phí)</h3>
                 <div className="flex gap-5">
-                  <button type="button" onClick={pending} aria-label="Tiếp tục với Google" className="grid size-[70px] place-items-center rounded-[10px] border border-[#db7a6a] transition-colors hover:bg-black/5">
+                  <button type="button" onClick={google} aria-label="Tiếp tục với Google" className="grid size-[70px] place-items-center rounded-[10px] border border-[#db7a6a] transition-colors hover:bg-black/5">
                     <GoogleLogo className="size-[49px]" />
                   </button>
-                  <button type="button" onClick={pending} aria-label="Tiếp tục với Facebook" className="grid size-[70px] place-items-center rounded-[10px] border border-[#db7a6a] transition-colors hover:bg-black/5">
+                  <button type="button" onClick={() => soon("Đăng nhập Facebook")} aria-label="Tiếp tục với Facebook" className="grid size-[70px] place-items-center rounded-[10px] border border-[#db7a6a] transition-colors hover:bg-black/5">
                     <FacebookLogo className="size-[50px]" />
                   </button>
                 </div>
@@ -143,8 +182,8 @@ export function AuthModal({ mode, onModeChange, onClose }: Props) {
                 <PasswordInput name="password" label="Mật khẩu" autoComplete={isRegister ? "new-password" : "current-password"} />
                 {isRegister && <PasswordInput name="confirm" label="Nhập lại mật khẩu" autoComplete="new-password" />}
 
-                <button type="submit" className="h-[52px] w-full rounded-[30px] border-2 border-white/50 bg-black text-[clamp(15px,1.04vw,18px)] font-bold text-white outline outline-1 outline-black/50 transition-opacity hover:opacity-80">
-                  {isRegister ? "Đăng ký" : "Đăng nhập"}
+                <button type="submit" disabled={busy} className="h-[52px] w-full rounded-[30px] border-2 border-white/50 bg-black text-[clamp(15px,1.04vw,18px)] font-bold text-white outline outline-1 outline-black/50 transition-opacity hover:opacity-80 disabled:opacity-50">
+                  {busy ? "Đang xử lý..." : isRegister ? "Đăng ký" : "Đăng nhập"}
                 </button>
 
                 {notice && (
@@ -158,7 +197,7 @@ export function AuthModal({ mode, onModeChange, onClose }: Props) {
                     {isRegister ? "Đăng nhập ngay" : "Đăng ký tài khoản"}
                   </button>
                   {/* TODO(auth): trang/flow quên mật khẩu (resetPasswordForEmail) */}
-                  <button type="button" onClick={pending} className="text-right underline hover:text-brand">
+                  <button type="button" onClick={() => soon("Tính năng quên mật khẩu")} className="text-right underline hover:text-brand">
                     Quên mật khẩu
                   </button>
                 </div>

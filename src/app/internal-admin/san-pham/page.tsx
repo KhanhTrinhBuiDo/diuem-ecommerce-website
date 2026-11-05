@@ -1,8 +1,12 @@
-import type { Metadata } from "next";
-import { ProductsManager } from "@/components/admin/Managers";
+import { requireAdmin } from "@/lib/admin-auth";
+import { listCategories, listProducts } from "@/lib/admin-data";
+import { ProductsAdmin } from "@/components/admin/ProductsAdmin";
 
-export const metadata: Metadata = { title: "Sản phẩm" };
+export const dynamic = "force-dynamic";
+export const metadata = { title: "Sản phẩm" };
 
-export default function Page() {
-  return <ProductsManager />;
+export default async function Page() {
+  await requireAdmin();
+  const [products, categories] = await Promise.all([listProducts(), listCategories()]);
+  return <ProductsAdmin products={products} categories={categories} />;
 }

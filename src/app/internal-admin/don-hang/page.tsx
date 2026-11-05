@@ -1,8 +1,11 @@
-import type { Metadata } from "next";
-import { OrdersManager } from "@/components/admin/Operations";
+import { requireAdmin } from "@/lib/admin-auth";
+import { listOrders } from "@/lib/admin-data";
+import { OrdersAdmin } from "@/components/admin/OrdersAdmin";
 
-export const metadata: Metadata = { title: "Đơn hàng" };
+export const dynamic = "force-dynamic";
+export const metadata = { title: "Đơn hàng" };
 
-export default function Page() {
-  return <OrdersManager />;
+export default async function Page() {
+  await requireAdmin();
+  return <OrdersAdmin orders={await listOrders()} />;
 }
