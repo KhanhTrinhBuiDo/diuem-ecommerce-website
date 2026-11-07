@@ -1,10 +1,11 @@
 import type { Product } from "@/components/home/ProductCard";
 import { sampleCard } from "@/data/products";
+import { siteImage } from "@/data/site-images";
 
 /**
  * DỮ LIỆU TẠM cho trang danh mục sản phẩm.
  * TODO(supabase): thay `collections` bằng bảng `categories`/`collections`, `getProducts` bằng truy vấn `products`.
- * TODO(ảnh): đặt banner vào public/images/catalog/ rồi điền đường dẫn vào `banner`.
+ * Banner: lấy từ public/images/Product_Catalog/ (xem docs/BAN_DO_ANH.md).
  */
 
 export type Collection = {
@@ -21,12 +22,13 @@ export const allProductsCollection: Collection = { slug: "tat-ca", name: "Sản 
 
 /** Các danh mục/bộ sưu tập có route /san-pham/[slug] */
 export const collections: Collection[] = [
-  { slug: "cham-soc-mat", name: "Chăm sóc mặt", title: "CHĂM SÓC MẶT", banner: null },
-  { slug: "cham-soc-toc", name: "Chăm sóc tóc", title: "CHĂM SÓC TÓC", banner: null },
-  { slug: "cham-soc-co-the", name: "Chăm sóc cơ thể", title: "CHĂM SÓC CƠ THỂ", banner: null },
+  { slug: "cham-soc-mat", name: "Chăm sóc mặt", title: "CHĂM SÓC MẶT", banner: siteImage("Product_Catalog/3.Cham_soc_mat") },
+  { slug: "cham-soc-toc", name: "Chăm sóc tóc", title: "CHĂM SÓC TÓC", banner: siteImage("Product_Catalog/1.Cham_soc_toc") },
+  { slug: "cham-soc-co-the", name: "Chăm sóc cơ thể", title: "CHĂM SÓC CƠ THỂ", banner: siteImage("Product_Catalog/2.Cham_soc_co_the") },
+  { slug: "cham-soc-em-be", name: "Chăm sóc em bé", title: "CHĂM SÓC EM BÉ", banner: siteImage("Product_Catalog/4.Cham_soc_em_be") },
   { slug: "combo-cham-soc-toc", name: "Combo Chăm sóc tóc", title: "COMBO CHĂM SÓC TÓC", banner: null },
   { slug: "ban-chay-nhat", name: "Bán chạy nhất", title: "BÁN CHẠY NHẤT", banner: null },
-  { slug: "qua-tang-nguoi-thuong", name: "Quà tặng người thương", title: "QUÀ TẶNG NGƯỜI THƯƠNG", banner: null },
+  { slug: "qua-tang-nguoi-thuong", name: "Quà tặng người thương", title: "QUÀ TẶNG NGƯỜI THƯƠNG", banner: siteImage("Product_Catalog/5.Qua_tang") },
   { slug: "combo-tang-nguoi-thuong", name: "Combo tặng người thương", title: "COMBO TẶNG NGƯỜI THƯƠNG", banner: null },
 ];
 

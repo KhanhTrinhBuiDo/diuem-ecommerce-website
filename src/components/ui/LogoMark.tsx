@@ -1,12 +1,11 @@
 import Image from "next/image";
 import { siteConfig } from "@/config/site";
+import { siteImage } from "@/data/site-images";
 
 /**
- * PLACEHOLDER logo.
- * TODO(logo): đặt file logo thật vào public/images/logo.png (hoặc .svg),
- * rồi đổi LOGO_SRC bên dưới; component sẽ tự dùng ảnh thật.
+ * Logo: bỏ file vào public/images/General/Logo.(png|svg|webp); chưa có thì hiện SVG tạm.
  */
-const LOGO_SRC: string | null = null; // ví dụ: "/images/logo.png"
+const LOGO_SRC: string | null = siteImage("General/Logo");
 
 type Props = { className?: string };
 
