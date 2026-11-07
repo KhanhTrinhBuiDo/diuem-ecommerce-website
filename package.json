@@ -3,9 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "predev": "node scripts/scan-images.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/scan-images.mjs",
     "build": "next build",
     "start": "next start",
+    "images": "node scripts/scan-images.mjs --report",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
