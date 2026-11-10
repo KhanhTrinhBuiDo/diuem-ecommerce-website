@@ -15,6 +15,17 @@ export function AccountButton() {
   const { open: openAuth, user, adminHref, signOut } = useAuthModal();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const timer = useRef<number | undefined>(undefined);
+  // Mở ngay khi rê chuột vào; chỉ đóng sau 350ms rời chuột (kịp rê xuống menu, không tắt vụt khi lệch nhẹ)
+  const enter = () => {
+    window.clearTimeout(timer.current);
+    if (window.matchMedia("(hover:hover)").matches) setOpen(true);
+  };
+  const leave = () => {
+    window.clearTimeout(timer.current);
+    timer.current = window.setTimeout(() => setOpen(false), 350);
+  };
+  useEffect(() => () => window.clearTimeout(timer.current), []);
 
   useEffect(() => {
     if (!open) return;
@@ -31,7 +42,7 @@ export function AccountButton() {
   const row = "block py-1 text-[clamp(15px,1.04vw,18px)] font-light leading-[22px] hover:text-brand";
   const rule = <span aria-hidden="true" className="block h-1 bg-line" />;
   return (
-    <div ref={ref} className="relative" onMouseEnter={() => window.matchMedia("(hover:hover)").matches && setOpen(true)} onMouseLeave={() => setOpen(false)}>
+    <div ref={ref} className="relative" onMouseEnter={enter} onMouseLeave={leave}>
       <button type="button" aria-label="Tài khoản" aria-haspopup="menu" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="grid size-10 place-items-center transition-colors hover:text-brand">
         <UserIcon />
       </button>

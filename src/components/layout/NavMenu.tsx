@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ImageOrPlaceholder } from "@/components/ui/ImageOrPlaceholder";
+import { siteImage } from "@/data/site-images";
 import { getProducts } from "@/data/catalog";
 import { megaMenu, type MenuGroup } from "@/data/menu";
 import type { NavLink } from "@/config/site";
@@ -38,7 +39,7 @@ export function NavMenu({ items }: { items: NavLink[] }) {
     timer.current = window.setTimeout(() => {
       setOpen(false);
       setGroup(null);
-    }, 120);
+    }, 350); // đủ thời gian rê chuột xuống menu, không tắt vụt
   };
   useEffect(() => () => window.clearTimeout(timer.current), []);
   useEffect(() => {
@@ -118,8 +119,8 @@ function GroupsView({ onGroup }: { onGroup: (g: MenuGroup) => void }) {
         </Link>
       </div>
       <div className="hidden w-[320px] flex-none flex-col gap-[50px] xl:flex">
-        <ImageOrPlaceholder src={null} alt="" label="Ảnh menu 1 · 320×262" className="h-[262px]" />
-        <ImageOrPlaceholder src={null} alt="" label="Ảnh menu 2 · 320×262" className="h-[262px]" />
+        <ImageOrPlaceholder src={siteImage("header/menu-1")} alt="" label="Ảnh menu 1 · 320×262" className="h-[262px]" />
+        <ImageOrPlaceholder src={siteImage("header/menu-2")} alt="" label="Ảnh menu 2 · 320×262" className="h-[262px]" />
       </div>
     </div>
   );
