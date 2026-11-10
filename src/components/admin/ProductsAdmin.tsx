@@ -3,7 +3,7 @@
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { saveProduct, setProductDeleted } from "@/app/internal-admin/actions";
-import { ImportProducts } from "@/components/admin/ImportProducts";
+import { BulkImages, ImportProducts } from "@/components/admin/ImportProducts";
 import { btn, inputCls, money } from "@/components/admin/shared";
 import { Badge, Dialog, Field, PageHeader, SearchInput, Table, Toggle } from "@/components/admin/ui";
 import { productStatusText, sizeUnits, type CategoryRow, type ProductInput, type ProductRow, type ProductStatus, type VariantRow } from "@/lib/admin-types";
@@ -78,10 +78,11 @@ export function ProductsAdmin({ products, categories }: { products: ProductRow[]
         subtitle="Thêm, sửa, xóa mềm sản phẩm. Ảnh lưu bằng link Cloudinary."
         actions={
           <>
+            <BulkImages products={products} />
             <ImportProducts />
             <button type="button" className={btn.primary} onClick={() => { setError(""); setSlugTouched(false); setEdit(blank(leafCats[0]?.id ?? "")); }}>
-            + Thêm sản phẩm
-          </button>
+              + Thêm sản phẩm
+            </button>
           </>
         }
       />

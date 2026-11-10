@@ -12,12 +12,12 @@ export const REQUIRED_COLS: ImportCol[] = [
   { key: "size_value", header: "Dung tích / khối lượng *", required: true, width: 16, note: "Số, vd 100 hoặc 7.5." },
   { key: "size_unit", header: "Đơn vị *", required: true, width: 10, note: "ml, g, cái, bộ." },
   { key: "price_vnd", header: "Giá bán (VND) *", required: true, width: 16, note: "Số nguyên, vd 250000 (chấp nhận 250.000)." },
-  { key: "images", header: "Ảnh (link Cloudinary) *", required: true, width: 50, note: "Nhiều link cách nhau bằng dấu cách, dấu phẩy hoặc xuống dòng. Link đầu tiên là ảnh chính. Tối đa 10 ảnh." },
   { key: "short_description", header: "Mô tả ngắn *", required: true, width: 44, note: "Hiển thị trên web." },
 ];
 
 /** Nhóm B: không bắt buộc; để trống thì dùng mặc định. */
 export const OPTIONAL_COLS: ImportCol[] = [
+  { key: "images", header: "Ảnh (link Cloudinary)", required: false, width: 50, note: "Hiển thị trên web. Có thể BỎ TRỐNG rồi kéo thả ảnh khi nhập (hệ thống tự tải lên Cloudinary). Nếu dán link: nhiều link cách nhau bằng dấu cách, dấu phẩy hoặc xuống dòng; link đầu tiên là ảnh chính. Tối đa 10 ảnh." },
   { key: "sku", header: "Mã SKU", required: false, width: 18, note: "Không hiển thị. Để trống: tự tạo từ slug + dung tích. Dùng SKU để cập nhật đúng phiên bản." },
   { key: "stock_qty", header: "Tồn kho", required: false, width: 10, note: "Không hiển thị. Mặc định 0." },
   { key: "slug", header: "Slug (đường dẫn)", required: false, width: 24, note: "Để trống: tự tạo từ tên. Slug đã tồn tại = cập nhật sản phẩm đó." },
@@ -50,7 +50,7 @@ export function splitLinks(s: string): string[] {
     .filter(Boolean);
 }
 
-export type ImportSummary = { created: number; updated: number; variants: number; products: { name: string; slug: string; isNew: boolean; variants: number }[] };
+export type ImportSummary = { created: number; updated: number; variants: number; products: { name: string; slug: string; isNew: boolean; variants: number; skus: string[]; excelImages: string[]; existingImages: string[] }[] };
 export type RowError = { row: number; message: string };
 export type ImportResponse =
   | { ok: true; committed: boolean; summary: ImportSummary }

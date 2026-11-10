@@ -91,7 +91,7 @@ export function Table({ head, children, empty }: { head: string[]; children: Rea
 }
 
 /** Hộp thoại gốc <dialog>: Esc đóng, focus được trình duyệt quản lý. */
-export function Dialog({ open, onClose, title, children, wide = false }: { open: boolean; onClose: () => void; title: string; children: ReactNode; wide?: boolean }) {
+export function Dialog({ open, onClose, title, children, wide = false }: { open: boolean; onClose: () => void; title: string; children: ReactNode; wide?: boolean | "xl" }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const d = ref.current;
@@ -104,7 +104,7 @@ export function Dialog({ open, onClose, title, children, wide = false }: { open:
       ref={ref}
       onClose={onClose}
       onClick={(e) => e.target === ref.current && onClose()}
-      className={`m-auto w-[calc(100%-32px)] rounded-[20px] p-0 shadow-[0_4px_30px_rgba(0,0,0,0.35)] backdrop:bg-black/50 ${wide ? "max-w-[820px]" : "max-w-[560px]"}`}
+      className={`m-auto w-[calc(100%-32px)] rounded-[20px] p-0 shadow-[0_4px_30px_rgba(0,0,0,0.35)] backdrop:bg-black/50 ${wide === "xl" ? "max-w-[1100px]" : wide ? "max-w-[820px]" : "max-w-[560px]"}`}
     >
       {open && (
         <div className="flex max-h-[85vh] flex-col">

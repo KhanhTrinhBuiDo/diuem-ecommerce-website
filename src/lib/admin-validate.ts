@@ -8,6 +8,13 @@ export const slugify = (s: string) =>
   s.normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/đ/gi, "d").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
 
 /** Ảnh chỉ nhận link https từ Cloudinary (chống chèn link tùy ý). */
+/** Ảnh phải thuộc đúng cloud của shop (nếu đã đặt NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME), tránh link từ tài khoản Cloudinary khác. */
+export function isOwnImage(u: string): boolean {
+  if (!isCloudinaryUrl(u)) return false;
+  const cloud = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  return !cloud || new URL(u).pathname.startsWith(`/${cloud}/`);
+}
+
 export function isCloudinaryUrl(u: string): boolean {
   try {
     const x = new URL(u);

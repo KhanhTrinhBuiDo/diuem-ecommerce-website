@@ -1,8 +1,9 @@
 "use server";
 
+import { createHash } from "node:crypto";
 import { requireAdmin } from "@/lib/admin-auth";
 import { orderNext, type ActionResult, type CategoryRow, type CouponRow, type OrderStatus, type ProductInput } from "@/lib/admin-types";
-import { validateCategory, validateCoupon, validateProduct } from "@/lib/admin-validate";
+import { isOwnImage, isSlug, validateCategory, validateCoupon, validateProduct } from "@/lib/admin-validate";
 import { createClient } from "@/lib/supabase/server";
 import { parseWorkbook, type ParsedProduct } from "@/lib/admin-import";
 import { MAX_IMPORT_BYTES, type ImportResponse, type RowError } from "@/lib/admin-import-spec";
@@ -148,6 +149,18 @@ export async function importProducts(formData: FormData): Promise<ImportResponse
   if (!file.name.toLowerCase().endsWith(".xlsx")) return { ok: false, error: "Chỉ nhận file .xlsx (tải file mẫu và điền vào)." };
   if (file.size > MAX_IMPORT_BYTES) return { ok: false, error: "File quá lớn (tối đa 3MB)." };
   const commit = formData.get("commit") === "1";
+  // Danh sách ảnh cuối cùng theo slug (do màn hình kéo thả gửi lên). Không có → dùng link trong Excel.
+  let imageMap: Record<string, string[]> | null = null;
+  const rawImages = formData.get("images");
+  if (typeof rawImages === "string" && rawImages) {
+    try {
+      imageMap = JSON.parse(rawImages) as Record<string, string[]>;
+    } catch {
+      return { ok: false, error: "Dữ liệu ảnh không hợp lệ." };
+    }
+    const bad = checkImageMap(imageMap);
+    if (bad) return { ok: false, error: bad };
+  }
 
   const sb = await createClient();
   const categories = await listCategories();
@@ -170,7 +183,6 @@ export async function importProducts(formData: FormData): Promise<ImportResponse
     const id = prodBySlug.get(p.slug);
     if (!id) {
       if (!p.category_id) rowErrors.push({ row: p.firstRow, message: `Sản phẩm mới "${p.name}" thiếu Danh mục.` });
-      if (p.images.length === 0) rowErrors.push({ row: p.firstRow, message: `Sản phẩm mới "${p.name}" thiếu Ảnh.` });
       if (!p.short_description) rowErrors.push({ row: p.firstRow, message: `Sản phẩm mới "${p.name}" thiếu Mô tả ngắn.` });
       if (!p.name) rowErrors.push({ row: p.firstRow, message: "Thiếu Tên sản phẩm." });
       if (p.variants.length === 0) rowErrors.push({ row: p.firstRow, message: `Sản phẩm "${p.name}" chưa có phiên bản hợp lệ.` });
@@ -183,11 +195,17 @@ export async function importProducts(formData: FormData): Promise<ImportResponse
   rowErrors.sort((a, b) => a.row - b.row);
   if (rowErrors.length) return { ok: false, error: `Có ${rowErrors.length} lỗi. Sửa file rồi tải lại.`, rowErrors };
 
+  const existingIds = [...prodBySlug.values()];
+  const exImages = existingIds.length
+    ? await Promise.all(chunk(existingIds, 100).map((c) => sb.from("product_images").select("product_id,image_url,sort_order").in("product_id", c).order("sort_order")))
+    : [];
+  const imgsOf = new Map<string, string[]>();
+  for (const r of exImages) for (const im of r.data ?? []) imgsOf.set(im.product_id as string, [...(imgsOf.get(im.product_id as string) ?? []), im.image_url as string]);
   const summary = {
     created: products.filter((p) => !prodBySlug.has(p.slug)).length,
     updated: products.filter((p) => prodBySlug.has(p.slug)).length,
     variants: products.reduce((n, p) => n + p.variants.length, 0),
-    products: products.map((p) => ({ name: p.name || p.slug, slug: p.slug, isNew: !prodBySlug.has(p.slug), variants: p.variants.length })),
+    products: products.map((p) => ({ name: p.name || p.slug, slug: p.slug, isNew: !prodBySlug.has(p.slug), variants: p.variants.length, skus: p.variants.map((v) => v.sku), excelImages: p.images, existingImages: imgsOf.get(prodBySlug.get(p.slug) ?? "") ?? [] })),
   };
   if (!commit) return { ok: true, committed: false, summary };
 
@@ -239,14 +257,72 @@ export async function importProducts(formData: FormData): Promise<ImportResponse
     for (const r of rs) if (r.error) return { ok: false, error: `${dbError(r.error)} (đã dừng khi cập nhật phiên bản).` };
   }
 
-  // Ảnh: sản phẩm nào có link trong file thì thay toàn bộ (ảnh đầu = ảnh chính)
-  const withImg = products.filter((p) => p.images.length > 0);
-  for (const c of chunk(withImg, 50)) {
-    const pids = c.map((p) => ids.get(p.slug)!);
-    const del = await sb.from("product_images").delete().in("product_id", pids);
-    if (del.error) return { ok: false, error: `${dbError(del.error)} (đã dừng khi cập nhật ảnh).` };
-    const { error } = await sb.from("product_images").insert(c.flatMap((p) => p.images.map((image_url, i) => ({ product_id: ids.get(p.slug), image_url, sort_order: i, is_primary: i === 0 }))));
-    if (error) return { ok: false, error: `${dbError(error)} (đã dừng khi lưu ảnh).` };
-  }
+  // Ảnh: danh sách cuối cùng theo slug (thay toàn bộ; ảnh đầu = ảnh chính)
+  const finalImages: Record<string, string[]> = imageMap ?? Object.fromEntries(products.filter((p) => p.images.length).map((p) => [p.slug, p.images]));
+  const toSet = Object.entries(finalImages).filter(([slug, urls]) => ids.has(slug) && urls.length > 0);
+  const imgErr = await applyImages(sb, toSet.map(([slug, urls]) => ({ id: ids.get(slug)!, urls })));
+  if (imgErr) return { ok: false, error: imgErr };
   return { ok: true, committed: true, summary };
+}
+
+/** Kiểm tra bản đồ ảnh {slug: [link...]} do trình duyệt gửi lên (không tin dữ liệu client). */
+function checkImageMap(m: unknown): string | null {
+  if (!m || typeof m !== "object" || Array.isArray(m)) return "Dữ liệu ảnh không hợp lệ.";
+  for (const [slug, urls] of Object.entries(m as Record<string, unknown>)) {
+    if (!Array.isArray(urls) || urls.length > 10) return `Sản phẩm "${slug}": tối đa 10 ảnh.`;
+    for (const u of urls) if (typeof u !== "string" || !isOwnImage(u)) return `Sản phẩm "${slug}": ảnh phải là link Cloudinary của shop.`;
+  }
+  return null;
+}
+
+/** Thay toàn bộ ảnh của các sản phẩm (ảnh đầu = ảnh chính). Trả về thông báo lỗi hoặc null. */
+async function applyImages(sb: Awaited<ReturnType<typeof createClient>>, list: { id: string; urls: string[] }[]): Promise<string | null> {
+  for (const c of chunk(list, 50)) {
+    const del = await sb.from("product_images").delete().in("product_id", c.map((x) => x.id));
+    if (del.error) return `${dbError(del.error)} (đã dừng khi cập nhật ảnh).`;
+    const rows = c.flatMap((x) => [...new Set(x.urls)].map((image_url, i) => ({ product_id: x.id, image_url, sort_order: i, is_primary: i === 0 })));
+    if (rows.length) {
+      const { error } = await sb.from("product_images").insert(rows);
+      if (error) return `${dbError(error)} (đã dừng khi lưu ảnh).`;
+    }
+  }
+  return null;
+}
+
+/** Chỉ cập nhật ảnh cho các sản phẩm đã có (màn hình "Tải ảnh hàng loạt"). */
+export async function saveProductImages(images: Record<string, string[]>): Promise<ActionResult> {
+  await requireAdmin();
+  const bad = checkImageMap(images);
+  if (bad) return { ok: false, error: bad };
+  const entries = Object.entries(images).filter(([, u]) => u.length > 0);
+  if (!entries.length) return { ok: true };
+  const sb = await createClient();
+  const rs = await Promise.all(chunk(entries.map(([s]) => s), 100).map((c) => sb.from("products").select("id,slug").in("slug", c)));
+  for (const r of rs) if (r.error) return { ok: false, error: dbError(r.error) };
+  const idBySlug = new Map(rs.flatMap((r) => r.data ?? []).map((p) => [p.slug as string, p.id as string]));
+  const err = await applyImages(sb, entries.filter(([s]) => idBySlug.has(s)).map(([s, urls]) => ({ id: idBySlug.get(s)!, urls })));
+  return err ? { ok: false, error: err } : { ok: true };
+}
+
+/**
+ * Cấp chữ ký tải ảnh lên Cloudinary (signed upload). Chỉ admin; thư mục cố định diuem/products/<slug>.
+ * Cần env server: CLOUDINARY_API_KEY, CLOUDINARY_API_SECRET, CLOUDINARY_UPLOAD_PRESET (tên preset signed).
+ */
+export async function signUploads(items: { slug: string; id: string }[]): Promise<ActionResult<{ signed: Record<string, { signature: string; timestamp: number; apiKey: string; preset: string; folder: string }> }>> {
+  await requireAdmin();
+  const apiKey = process.env.CLOUDINARY_API_KEY;
+  const secret = process.env.CLOUDINARY_API_SECRET;
+  const preset = process.env.CLOUDINARY_UPLOAD_PRESET;
+  if (!apiKey || !secret || !preset) return { ok: false, error: "Server chưa cấu hình Cloudinary (CLOUDINARY_API_KEY / CLOUDINARY_API_SECRET / CLOUDINARY_UPLOAD_PRESET)." };
+  if (!Array.isArray(items) || items.length === 0 || items.length > 500) return { ok: false, error: "Danh sách ảnh không hợp lệ." };
+  const timestamp = Math.floor(Date.now() / 1000);
+  const signed: Record<string, { signature: string; timestamp: number; apiKey: string; preset: string; folder: string }> = {};
+  for (const it of items) {
+    if (!isSlug(it.slug) || !/^[a-f0-9]{20}$/.test(it.id)) return { ok: false, error: "Dữ liệu ảnh không hợp lệ." };
+    const folder = `diuem/products/${it.slug}`;
+    // Cloudinary: sắp tham số theo alphabet, nối "k=v&", thêm secret, SHA-1 (không ký file/api_key/resource_type)
+    const toSign = `folder=${folder}&public_id=${it.id}&timestamp=${timestamp}&upload_preset=${preset}${secret}`;
+    signed[`${it.slug}/${it.id}`] = { signature: createHash("sha1").update(toSign).digest("hex"), timestamp, apiKey, preset, folder };
+  }
+  return { ok: true, signed };
 }
