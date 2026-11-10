@@ -12,7 +12,7 @@ import { UserIcon } from "@/components/ui/icons";
  * TODO(auth): chưa đăng nhập → "Tài khoản của bạn" nên mở popup đăng nhập; trang /tai-khoan vẫn hiện dữ liệu mẫu.
  */
 export function AccountButton() {
-  const { open: openAuth, user, signOut } = useAuthModal();
+  const { open: openAuth, user, adminHref, signOut } = useAuthModal();
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
@@ -40,6 +40,12 @@ export function AccountButton() {
           <div className="relative w-[min(340px,calc(100vw-32px))] rounded-[20px] bg-white px-[33px] py-8 shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
             <span aria-hidden="true" className="absolute -top-2 right-[18px] size-5 rotate-45 bg-white" />
             <div role="menu" className="relative flex flex-col gap-2.5">
+              {adminHref && (
+                <>
+                  <Link role="menuitem" href={adminHref} onClick={() => setOpen(false)} className={`${row} font-bold text-brand`}>Trang quản trị (Dashboard)</Link>
+                  {rule}
+                </>
+              )}
               <Link role="menuitem" href="/tai-khoan/ho-so" onClick={() => setOpen(false)} className={row}>Tài khoản của bạn</Link>
               {rule}
               <Link role="menuitem" href="/tra-cuu-don-hang" onClick={() => setOpen(false)} className={row}>Tra cứu đơn hàng</Link>
