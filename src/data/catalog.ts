@@ -39,3 +39,25 @@ export function getProducts(slug: string, total = 32): Product[] {
   const base = slug === "tat-ca" ? "cham-soc-toc" : slug; // TODO(catalog): sản phẩm thật sẽ có danh mục riêng
   return Array.from({ length: total }, (_, i) => sampleCard(`${slug}-${i + 1}`, base));
 }
+
+/** Số sản phẩm mẫu được coi là "mới" (mô phỏng nhãn admin gán). */
+const NEW_SAMPLE = 8;
+
+/**
+ * Sản phẩm có nhãn "Sản phẩm mới" (admin gán, cột products.is_new).
+ * TODO(supabase): thay bằng truy vấn products where is_new and status = 'active' and deleted_at is null.
+ */
+export function getNewProducts(total = NEW_SAMPLE): Product[] {
+  return getProducts("tat-ca", NEW_SAMPLE).slice(0, total);
+}
+
+/**
+ * Phần "tất cả sản phẩm" hiển thị SAU khối sản phẩm mới (không lặp lại sản phẩm đã ở khối mới).
+ * Mẫu: 8 sản phẩm đầu của danh sách là "mới". TODO(supabase): lọc bỏ is_new = true.
+ */
+export function getProductsExceptNew(slug: string, total = 32): Product[] {
+  return getProducts(slug, total).slice(NEW_SAMPLE);
+}
+
+/** Trang /new-arrivals */
+export const newArrivalsCollection: Collection = { slug: "new-arrivals", name: "New Arrivals", title: "NEW ARRIVALS", banner: null };

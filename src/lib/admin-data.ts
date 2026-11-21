@@ -16,7 +16,7 @@ export async function listProducts(): Promise<ProductRow[]> {
   const { data, error } = await sb
     .from("products")
     .select(
-      "id,slug,name,kind,status,is_featured,category_id,hero_material,short_description,usage_instructions,storage_instructions,warnings,shelf_life_months,pao_months,deleted_at,created_at,storefront_categories(name),product_variants(id,sku,size_value,size_unit,price_vnd,stock_qty,is_active),product_images(image_url,sort_order,is_primary)",
+      "id,slug,name,kind,status,is_featured,is_new,category_id,hero_material,short_description,usage_instructions,storage_instructions,warnings,shelf_life_months,pao_months,deleted_at,created_at,storefront_categories(name),product_variants(id,sku,size_value,size_unit,price_vnd,stock_qty,is_active),product_images(image_url,sort_order,is_primary)",
     )
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
@@ -24,7 +24,7 @@ export async function listProducts(): Promise<ProductRow[]> {
     const cat = p.storefront_categories as unknown as { name: string } | null;
     const imgs = [...((p.product_images as { image_url: string; sort_order: number; is_primary: boolean }[]) ?? [])].sort((a, b) => Number(b.is_primary) - Number(a.is_primary) || a.sort_order - b.sort_order);
     return {
-      id: p.id, slug: p.slug, name: p.name, kind: p.kind, status: p.status, is_featured: p.is_featured,
+      id: p.id, slug: p.slug, name: p.name, kind: p.kind, status: p.status, is_featured: p.is_featured, is_new: Boolean(p.is_new),
       category_id: p.category_id, category_name: cat?.name ?? "",
       hero_material: p.hero_material ?? "", short_description: p.short_description ?? "", usage_instructions: p.usage_instructions ?? "",
       storage_instructions: p.storage_instructions ?? "", warnings: p.warnings ?? "",

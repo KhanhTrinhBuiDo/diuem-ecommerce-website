@@ -13,6 +13,8 @@ export type ProductRow = {
   kind: "single" | "bundle";
   status: ProductStatus;
   is_featured: boolean;
+  /** Nhãn "Sản phẩm mới" do admin gán (hiện ở menu NEW ARRIVALS + đầu trang /san-pham) */
+  is_new: boolean;
   category_id: string;
   category_name: string;
   hero_material: string;

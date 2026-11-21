@@ -1,4 +1,3 @@
-
 /**
  * Cấu hình tập trung cho site: menu, link footer, liên hệ, mạng xã hội.
  * Sửa nội dung ở đây thay vì sửa trong component.
@@ -36,7 +35,7 @@ export const siteConfig = {
 
 /** Menu chính trên header */
 export const mainNav: NavLink[] = [
-  { label: "NEW ARRIVALS", href: "/new-arrivals", ready: false },
+  { label: "NEW ARRIVALS", href: "/new-arrivals", ready: true },
   { label: "SẢN PHẨM", href: "/san-pham", ready: true },
   { label: "VỀ DỊU EM", href: "/ve-diu-em", ready: false },
   { label: "BÀI VIẾT", href: "/bai-viet", ready: false },
@@ -136,4 +135,3 @@ export const PLACEHOLDER_PAGES: NavLink[] = (() => {
     return true;
   });
 })();
-

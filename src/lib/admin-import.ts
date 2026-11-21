@@ -50,6 +50,7 @@ export async function buildTemplate(categories: CategoryRow[]): Promise<Buffer> 
   dv("size_unit", ['"ml,g,cái,bộ"']);
   dv("status", ['"Nháp,Đang bán,Ngừng bán"']);
   dv("is_featured", ['"Có,Không"']);
+  dv("is_new", ['"Có,Không"']);
 
   const wh = wb.addWorksheet(SHEET_HELP);
   wh.getColumn(1).width = 110;
@@ -57,9 +58,9 @@ export async function buildTemplate(categories: CategoryRow[]): Promise<Buffer> 
     "HƯỚNG DẪN NHẬP SẢN PHẨM BẰNG EXCEL",
     "",
     "1. Điền dữ liệu ở sheet 'Sản phẩm', mỗi dòng = 1 phiên bản (dung tích/giá). Giữ nguyên dòng tiêu đề (dòng 1).",
-    "2. Cột tiêu đề màu HỒNG (có dấu *) là thông tin hiển thị trên web và BẮT BUỘC với sản phẩm mới. Cột màu XÁM là không bắt buộc; để trống sẽ dùng mặc định.",
+    "2. Cột tiêu đề màu HỒNG (có dấu *) là thông tin hiển thị trên web và BẮT BUỘC với sản phẩm mới. Cột màu XÁM là không bắt buộc (gồm cột Ảnh); để trống sẽ dùng mặc định.",
     "3. Sản phẩm có nhiều dung tích: viết nhiều dòng cùng Tên (hoặc cùng Slug). Thông tin chung lấy ở dòng đầu tiên.",
-    "4. Nhiều ảnh trong 1 ô: cách nhau bằng dấu cách, dấu phẩy hoặc xuống dòng. Link đầu tiên là ảnh chính. Ví dụ: link1 link2 link3. Chỉ nhận link https://res.cloudinary.com/...",
+    "4. Ảnh: có thể bỏ trống cột ảnh rồi KÉO THẢ ảnh khi nhập (tên file dạng SKU_1.jpg, SKU_2.jpg... hoặc thư mục theo SKU/slug; số 1 là ảnh chính). Nếu dán link: nhiều link cách nhau bằng dấu cách, dấu phẩy hoặc xuống dòng, link đầu là ảnh chính, chỉ nhận https://res.cloudinary.com/...",
     "5. Slug đã tồn tại trong hệ thống = CẬP NHẬT sản phẩm đó (ô để trống sẽ giữ nguyên giá trị cũ). Phiên bản khớp theo Mã SKU; phiên bản không có trong file được giữ nguyên.",
     "6. Trạng thái mặc định của sản phẩm mới là 'Nháp'; vào trang Sản phẩm để bật 'Đang bán' sau khi kiểm tra.",
     `7. Xóa các dòng ví dụ (tên bắt đầu bằng "${SAMPLE_PREFIX}") — hệ thống tự bỏ qua chúng. Tối đa ${MAX_IMPORT_ROWS} dòng mỗi lần.`,
@@ -84,6 +85,7 @@ export type ParsedProduct = {
   short_description: string | null;
   status: "draft" | "active" | "discontinued" | null;
   is_featured: boolean | null;
+  is_new: boolean | null;
   hero_material: string | null;
   usage_instructions: string | null;
   storage_instructions: string | null;
@@ -166,7 +168,7 @@ export async function parseWorkbook(buf: Buffer | ArrayBuffer, categories: Categ
     let p = products.get(slug);
     const isFirst = !p;
     if (!p) {
-      p = { firstRow: r, slug, name: name.trim(), category_id: null, images: [], short_description: null, status: null, is_featured: null, hero_material: null, usage_instructions: null, storage_instructions: null, warnings: null, shelf_life_months: null, pao_months: null, variants: [] };
+      p = { firstRow: r, slug, name: name.trim(), category_id: null, images: [], short_description: null, status: null, is_featured: null, is_new: null, hero_material: null, usage_instructions: null, storage_instructions: null, warnings: null, shelf_life_months: null, pao_months: null, variants: [] };
       products.set(slug, p);
     }
     if (isFirst) {
@@ -194,6 +196,8 @@ export async function parseWorkbook(buf: Buffer | ArrayBuffer, categories: Categ
       }
       const ft = get("is_featured");
       if (ft) p.is_featured = yes.has(norm(ft));
+      const nw = get("is_new");
+      if (nw) p.is_new = yes.has(norm(nw));
       for (const k of ["shelf_life_months", "pao_months"] as const) {
         const t = get(k);
         if (!t) continue;

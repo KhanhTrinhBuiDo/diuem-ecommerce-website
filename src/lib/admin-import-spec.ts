@@ -1,7 +1,7 @@
 /** Cấu trúc file Excel nhập sản phẩm (dùng chung cho file mẫu và bộ đọc file). */
 export type ImportKey =
   | "name" | "category" | "size_value" | "size_unit" | "price_vnd" | "images" | "short_description"
-  | "sku" | "stock_qty" | "slug" | "status" | "is_featured" | "hero_material" | "usage_instructions" | "storage_instructions" | "warnings" | "shelf_life_months" | "pao_months";
+  | "sku" | "stock_qty" | "slug" | "status" | "is_featured" | "is_new" | "hero_material" | "usage_instructions" | "storage_instructions" | "warnings" | "shelf_life_months" | "pao_months";
 
 export type ImportCol = { key: ImportKey; header: string; required: boolean; width: number; note: string };
 
@@ -23,6 +23,7 @@ export const OPTIONAL_COLS: ImportCol[] = [
   { key: "slug", header: "Slug (đường dẫn)", required: false, width: 24, note: "Để trống: tự tạo từ tên. Slug đã tồn tại = cập nhật sản phẩm đó." },
   { key: "status", header: "Trạng thái", required: false, width: 13, note: "Nháp / Đang bán / Ngừng bán. Mặc định: Nháp (an toàn, bật lên sau khi kiểm tra)." },
   { key: "is_featured", header: "Nổi bật", required: false, width: 9, note: "Có / Không. Mặc định Không." },
+  { key: "is_new", header: "Sản phẩm mới", required: false, width: 11, note: "Có / Không. Gắn nhãn hiện ở menu NEW ARRIVALS và đầu trang sản phẩm. Mặc định Không." },
   { key: "hero_material", header: "Thành phần chính", required: false, width: 26, note: "" },
   { key: "usage_instructions", header: "Hướng dẫn sử dụng", required: false, width: 36, note: "" },
   { key: "storage_instructions", header: "Hướng dẫn bảo quản", required: false, width: 30, note: "" },

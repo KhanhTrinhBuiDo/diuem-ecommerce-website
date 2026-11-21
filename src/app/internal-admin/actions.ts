@@ -31,7 +31,7 @@ export async function saveProduct(input: ProductInput): Promise<ActionResult<{ i
   const sb = await createClient();
 
   const row = {
-    category_id: input.category_id, slug: input.slug.trim(), name: input.name.trim(), kind: input.kind, status: input.status, is_featured: input.is_featured,
+    category_id: input.category_id, slug: input.slug.trim(), name: input.name.trim(), kind: input.kind, status: input.status, is_featured: input.is_featured, is_new: input.is_new,
     hero_material: nz(input.hero_material), short_description: nz(input.short_description), usage_instructions: nz(input.usage_instructions),
     storage_instructions: nz(input.storage_instructions), warnings: nz(input.warnings), shelf_life_months: input.shelf_life_months, pao_months: input.pao_months,
   };
@@ -217,6 +217,7 @@ export async function importProducts(formData: FormData): Promise<ImportResponse
     if (p.short_description !== null) r.short_description = p.short_description;
     if (p.status) r.status = p.status;
     if (p.is_featured !== null) r.is_featured = p.is_featured;
+    if (p.is_new !== null) r.is_new = p.is_new;
     if (p.hero_material !== null) r.hero_material = p.hero_material;
     if (p.usage_instructions !== null) r.usage_instructions = p.usage_instructions;
     if (p.storage_instructions !== null) r.storage_instructions = p.storage_instructions;
@@ -228,7 +229,7 @@ export async function importProducts(formData: FormData): Promise<ImportResponse
   const ids = new Map(prodBySlug);
   const fresh = products.filter((p) => !prodBySlug.has(p.slug));
   for (const c of chunk(fresh, 100)) {
-    const { data, error } = await sb.from("products").insert(c.map((p) => ({ slug: p.slug, kind: "single", status: "draft", is_featured: false, ...base(p) }))).select("id,slug");
+    const { data, error } = await sb.from("products").insert(c.map((p) => ({ slug: p.slug, kind: "single", status: "draft", is_featured: false, is_new: false, ...base(p) }))).select("id,slug");
     if (error) return { ok: false, error: `${dbError(error)} (đã dừng khi tạo sản phẩm mới).` };
     for (const d of data ?? []) ids.set(d.slug as string, d.id as string);
   }

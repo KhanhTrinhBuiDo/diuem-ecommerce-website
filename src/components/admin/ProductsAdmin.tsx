@@ -12,7 +12,7 @@ import { slugify } from "@/lib/admin-validate";
 const statusTone = { draft: "amber", active: "green", discontinued: "gray" } as const;
 const blankVariant = (): VariantRow => ({ sku: "", size_value: 100, size_unit: "ml", price_vnd: 0, stock_qty: 0, is_active: true });
 const blank = (cat: string): ProductInput => ({
-  slug: "", name: "", kind: "single", status: "draft", is_featured: false, category_id: cat, hero_material: "", short_description: "", usage_instructions: "",
+  slug: "", name: "", kind: "single", status: "draft", is_featured: false, is_new: false, category_id: cat, hero_material: "", short_description: "", usage_instructions: "",
   storage_instructions: "", warnings: "", shelf_life_months: null, pao_months: null, variants: [blankVariant()], images: [],
 });
 const toInput = (p: ProductRow): ProductInput => ({ ...p, variants: p.variants.map((v) => ({ ...v })), images: [...p.images] });
@@ -115,7 +115,7 @@ export function ProductsAdmin({ products, categories }: { products: ProductRow[]
                   ) : (
                     <span className="grid size-12 flex-none place-items-center rounded-[8px] bg-[linear-gradient(135deg,#ffe3f1,#f7b5d6)] text-[10px] text-brand">Ảnh</span>
                   )}
-                  <div className="min-w-0"><p className="font-medium">{p.name}</p><p className="text-xs font-light text-black/50">{active.map((v) => v.sku).join(", ") || "—"}</p></div>
+                  <div className="min-w-0"><p className="font-medium">{p.name} {p.is_new && <Badge tone="pink">Mới</Badge>}</p><p className="text-xs font-light text-black/50">{active.map((v) => v.sku).join(", ") || "—"}</p></div>
                 </div>
               </td>
               <td>{p.category_name}</td>
@@ -157,6 +157,7 @@ export function ProductsAdmin({ products, categories }: { products: ProductRow[]
               </Field>
               <Field label="Nguyên liệu chủ đạo"><input className={inputCls} value={edit.hero_material} onChange={(e) => set("hero_material", e.target.value)} /></Field>
               <div className="flex items-center justify-between gap-3 text-sm"><span className="font-medium">Sản phẩm nổi bật</span><Toggle checked={edit.is_featured} onChange={(v) => set("is_featured", v)} label="Nổi bật" /></div>
+              <div className="flex items-center justify-between gap-3 text-sm"><span className="font-medium">Gắn nhãn &quot;Sản phẩm mới&quot; (hiện ở NEW ARRIVALS)</span><Toggle checked={edit.is_new} onChange={(v) => set("is_new", v)} label="Sản phẩm mới" /></div>
               <div className="sm:col-span-2"><Field label="Mô tả ngắn"><textarea rows={3} className={`${inputCls} h-auto py-3`} value={edit.short_description} onChange={(e) => set("short_description", e.target.value)} /></Field></div>
               <div className="sm:col-span-2"><Field label="Hướng dẫn sử dụng"><textarea rows={2} className={`${inputCls} h-auto py-3`} value={edit.usage_instructions} onChange={(e) => set("usage_instructions", e.target.value)} /></Field></div>
               <Field label="Bảo quản"><textarea rows={2} className={`${inputCls} h-auto py-3`} value={edit.storage_instructions} onChange={(e) => set("storage_instructions", e.target.value)} /></Field>

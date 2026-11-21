@@ -10,14 +10,19 @@ import { ArrowRight } from "@/components/ui/ArrowRight";
  * Hiện tải thêm ngay trên trình duyệt từ danh sách đã có.
  * TODO(supabase): khi có database, đổi sang phân trang phía server (limit/offset) thay vì cắt mảng.
  */
-export function ProductGrid({ products, pageSize = 12 }: { products: Product[]; pageSize?: number }) {
+export function ProductGrid({ products, pageSize = 12, title, id }: { products: Product[]; pageSize?: number; title?: string; id?: string }) {
   const [visible, setVisible] = useState(pageSize);
   const total = products.length;
   const shown = Math.min(visible, total);
 
   return (
     <div className="min-w-0 flex-1 px-6 pb-[50px] lg:pl-5 lg:pr-[50px]">
-      <ul className="grid grid-cols-2 gap-x-4 gap-y-10 pt-6 lg:grid-cols-4 lg:gap-x-[clamp(20px,2.4vw,41px)] lg:gap-y-[50px] lg:pt-[50px]">
+      {title && (
+        <h2 id={id} className="pt-6 text-[clamp(18px,1.45vw,25px)] font-bold leading-tight lg:pt-[50px]">
+          {title}
+        </h2>
+      )}
+      <ul className={`grid grid-cols-2 gap-x-4 gap-y-10 ${title ? "pt-4 lg:pt-6" : "pt-6 lg:pt-[50px]"} lg:grid-cols-4 lg:gap-x-[clamp(20px,2.4vw,41px)] lg:gap-y-[50px]`}>
         {products.slice(0, shown).map((p) => (
           <li key={p.id}>
             <ProductCard product={p} variant="catalog" />
