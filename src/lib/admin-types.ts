@@ -5,7 +5,12 @@ export const productStatusText: Record<ProductStatus, string> = { draft: "Nháp"
 export type SizeUnit = "ml" | "g" | "pcs" | "set";
 export const sizeUnits: SizeUnit[] = ["ml", "g", "pcs", "set"];
 
-export type VariantRow = { id?: string; sku: string; size_value: number; size_unit: SizeUnit; price_vnd: number; stock_qty: number; is_active: boolean };
+export type VariantRow = {
+  id?: string; sku: string; size_value: number; size_unit: SizeUnit; price_vnd: number; stock_qty: number; is_active: boolean;
+  /** Nhãn hiển thị ("Túi refill 450 ml", "Hũ 10 g"); undefined = không đổi khi lưu */ label?: string | null;
+  is_default?: boolean;
+  /** Ảnh riêng của size này (PI_) */ images?: string[];
+};
 export type ProductRow = {
   id: string;
   slug: string;
@@ -22,6 +27,8 @@ export type ProductRow = {
   usage_instructions: string;
   storage_instructions: string;
   warnings: string;
+  /** Thông tin nạp từ CSV (chỉ đọc trong form; chưa có ô sửa — TODO(admin-form)) */
+  ingredients?: string; suitable_for?: string; region?: string; product_line?: string;
   shelf_life_months: number | null;
   pao_months: number | null;
   deleted: boolean;

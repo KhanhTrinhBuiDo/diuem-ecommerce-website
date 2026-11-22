@@ -52,7 +52,10 @@ export async function saveProduct(input: ProductInput): Promise<ActionResult<{ i
   const ops: PromiseLike<{ error: { code?: string; message: string } | null }>[] = [];
   const toInsert: Record<string, unknown>[] = [];
   for (const v of input.variants) {
-    const vr = { sku: v.sku.trim(), size_value: v.size_value, size_unit: v.size_unit, price_vnd: v.price_vnd, stock_qty: v.stock_qty, is_active: v.is_active };
+    const vr: Record<string, unknown> = { sku: v.sku.trim(), size_value: v.size_value, size_unit: v.size_unit, price_vnd: v.price_vnd, stock_qty: v.stock_qty, is_active: v.is_active };
+    // nhãn/biến thể chính: chỉ ghi khi form gửi lên (tránh xóa nhầm dữ liệu nạp từ CSV)
+    if (v.label !== undefined) vr.label = nz(v.label ?? "");
+    if (v.is_default !== undefined) vr.is_default = v.is_default;
     if (v.id) {
       keep.add(v.id);
       ops.push(sb.from("product_variants").update(vr).eq("id", v.id).eq("product_id", id));
@@ -64,7 +67,8 @@ export async function saveProduct(input: ProductInput): Promise<ActionResult<{ i
   for (const r of await Promise.all(ops)) if (r.error) return fail(dbError(r.error));
 
   // Ảnh: thay toàn bộ danh sách link (ảnh đầu = ảnh chính)
-  await sb.from("product_images").delete().eq("product_id", id);
+  // chỉ ảnh chung của sản phẩm (variant_id null); ảnh riêng từng size (PI_) được giữ nguyên
+  await sb.from("product_images").delete().eq("product_id", id).is("variant_id", null);
   if (input.images.length) {
     const { error } = await sb.from("product_images").insert(input.images.map((image_url, i) => ({ product_id: id, image_url, sort_order: i, is_primary: i === 0 })));
     if (error) return fail(dbError(error));
@@ -270,6 +274,7 @@ export async function importProducts(formData: FormData): Promise<ImportResponse
 function checkImageMap(m: unknown): string | null {
   if (!m || typeof m !== "object" || Array.isArray(m)) return "Dữ liệu ảnh không hợp lệ.";
   for (const [slug, urls] of Object.entries(m as Record<string, unknown>)) {
+    if (!/^[a-z0-9-]+(::[A-Za-z0-9-]+)?$/.test(slug)) return "Khóa ảnh không hợp lệ.";
     if (!Array.isArray(urls) || urls.length > 10) return `Sản phẩm "${slug}": tối đa 10 ảnh.`;
     for (const u of urls) if (typeof u !== "string" || !isOwnImage(u)) return `Sản phẩm "${slug}": ảnh phải là link Cloudinary của shop.`;
   }
@@ -279,7 +284,7 @@ function checkImageMap(m: unknown): string | null {
 /** Thay toàn bộ ảnh của các sản phẩm (ảnh đầu = ảnh chính). Trả về thông báo lỗi hoặc null. */
 async function applyImages(sb: Awaited<ReturnType<typeof createClient>>, list: { id: string; urls: string[] }[]): Promise<string | null> {
   for (const c of chunk(list, 50)) {
-    const del = await sb.from("product_images").delete().in("product_id", c.map((x) => x.id));
+    const del = await sb.from("product_images").delete().in("product_id", c.map((x) => x.id)).is("variant_id", null);
     if (del.error) return `${dbError(del.error)} (đã dừng khi cập nhật ảnh).`;
     const rows = c.flatMap((x) => [...new Set(x.urls)].map((image_url, i) => ({ product_id: x.id, image_url, sort_order: i, is_primary: i === 0 })));
     if (rows.length) {
@@ -290,7 +295,10 @@ async function applyImages(sb: Awaited<ReturnType<typeof createClient>>, list: {
   return null;
 }
 
-/** Chỉ cập nhật ảnh cho các sản phẩm đã có (màn hình "Tải ảnh hàng loạt"). */
+/**
+ * Chỉ cập nhật ảnh cho các sản phẩm đã có (màn hình "Tải ảnh hàng loạt").
+ * Khóa `slug` = ảnh chung của sản phẩm (CPM/CPP/ST); khóa `slug::SKU` = ảnh riêng của một size (PI_).
+ */
 export async function saveProductImages(images: Record<string, string[]>): Promise<ActionResult> {
   await requireAdmin();
   const bad = checkImageMap(images);
@@ -298,11 +306,31 @@ export async function saveProductImages(images: Record<string, string[]>): Promi
   const entries = Object.entries(images).filter(([, u]) => u.length > 0);
   if (!entries.length) return { ok: true };
   const sb = await createClient();
-  const rs = await Promise.all(chunk(entries.map(([s]) => s), 100).map((c) => sb.from("products").select("id,slug").in("slug", c)));
-  for (const r of rs) if (r.error) return { ok: false, error: dbError(r.error) };
-  const idBySlug = new Map(rs.flatMap((r) => r.data ?? []).map((p) => [p.slug as string, p.id as string]));
-  const err = await applyImages(sb, entries.filter(([s]) => idBySlug.has(s)).map(([s, urls]) => ({ id: idBySlug.get(s)!, urls })));
-  return err ? { ok: false, error: err } : { ok: true };
+  const prodEntries = entries.filter(([k]) => !k.includes("::"));
+  const varEntries = entries.filter(([k]) => k.includes("::")).map(([k, urls]) => ({ sku: k.split("::")[1], urls }));
+  if (prodEntries.length) {
+    const rs = await Promise.all(chunk(prodEntries.map(([s]) => s), 100).map((c) => sb.from("products").select("id,slug").in("slug", c)));
+    for (const r of rs) if (r.error) return { ok: false, error: dbError(r.error) };
+    const idBySlug = new Map(rs.flatMap((r) => r.data ?? []).map((p) => [p.slug as string, p.id as string]));
+    const err = await applyImages(sb, prodEntries.filter(([s]) => idBySlug.has(s)).map(([s, urls]) => ({ id: idBySlug.get(s)!, urls })));
+    if (err) return { ok: false, error: err };
+  }
+  if (varEntries.length) {
+    const rs = await Promise.all(chunk(varEntries.map((v) => v.sku), 100).map((c) => sb.from("product_variants").select("id,sku,product_id").in("sku", c)));
+    for (const r of rs) if (r.error) return { ok: false, error: dbError(r.error) };
+    const bySku = new Map(rs.flatMap((r) => r.data ?? []).map((v) => [v.sku as string, v as { id: string; product_id: string }]));
+    const list = varEntries.filter((v) => bySku.has(v.sku)).map((v) => ({ ...bySku.get(v.sku)!, urls: v.urls }));
+    for (const c of chunk(list, 50)) {
+      const del = await sb.from("product_images").delete().in("variant_id", c.map((x) => x.id));
+      if (del.error) return { ok: false, error: `${dbError(del.error)} (đã dừng khi cập nhật ảnh theo size).` };
+      const rows = c.flatMap((x) => [...new Set(x.urls)].map((image_url, i) => ({ product_id: x.product_id, variant_id: x.id, image_url, sort_order: i, is_primary: false })));
+      if (rows.length) {
+        const { error } = await sb.from("product_images").insert(rows);
+        if (error) return { ok: false, error: `${dbError(error)} (đã dừng khi lưu ảnh theo size).` };
+      }
+    }
+  }
+  return { ok: true };
 }
 
 /**

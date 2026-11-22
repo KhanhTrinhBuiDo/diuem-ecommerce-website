@@ -4,10 +4,15 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { signUploads } from "@/app/internal-admin/actions";
 import { btn } from "@/components/admin/shared";
 import { Badge } from "@/components/admin/ui";
-import { MAX_FILE_BYTES, MAX_IMAGES, isUsable, matchFiles, pool, prepareUpload, readDrop, uploadReady, uploadSigned, type DropFile, type Prepared } from "@/lib/image-upload";
+import { MAX_FILE_BYTES, MAX_IMAGES, isUsable, matchCatalog, matchFiles, pool, prepareUpload, readDrop, uploadReady, uploadSigned, type DropFile, type Prepared } from "@/lib/image-upload";
 
 /** Dòng sản phẩm đầu vào cho màn hình kéo thả ảnh. */
-export type SeedRow = { slug: string; name: string; isNew: boolean; skus: string[]; existing: string[]; links: string[] };
+export type SeedRow = {
+    slug: string; name: string; isNew: boolean; skus: string[]; existing: string[]; links: string[];
+    /** Có giá trị = dòng này là ảnh riêng của một size (khóa lưu = `slug::SKU`) */
+    variantSku?: string; sizeValue?: number;
+};
+const rk = (r: { slug: string; variantSku?: string }) => (r.variantSku ? `${r.slug}::${r.variantSku}` : r.slug);
 type Mode = "replace" | "skip" | "edit";
 type Img = { id: string; kind: "existing" | "link" | "new"; url?: string; file?: File; sig?: string; preview: string; status: "idle" | "err"; err?: string };
 type RowState = SeedRow & { items: Img[]; mode: Mode };
@@ -69,7 +74,7 @@ export function ImageImporter({ rows: seed, commitLabel, onCommit }: Props) {
 
     useEffect(() => () => { previews.current.forEach(URL.revokeObjectURL); trayUrls.current.forEach(URL.revokeObjectURL); }, []);
 
-    const patchRow = (slug: string, fn: (r: RowState) => RowState) => setRows((p) => p.map((r) => (r.slug === slug ? fn(r) : r)));
+    const patchRow = (slug: string, fn: (r: RowState) => RowState) => setRows((p) => p.map((r) => (rk(r) === slug ? fn(r) : r)));
     const trayUrl = (f: File) => {
         let u = trayUrls.current.get(f);
         if (!u) { u = URL.createObjectURL(f); trayUrls.current.set(f, u); }
@@ -80,7 +85,7 @@ export function ImageImporter({ rows: seed, commitLabel, onCommit }: Props) {
         let added = 0, overflow = 0;
         setRows((prev) =>
             prev.map((r) => {
-                const files = map.get(r.slug);
+                const files = map.get(rk(r));
                 if (!files?.length) return r;
                 const have = new Set(r.items.map((i) => i.sig).filter(Boolean));
                 const items = [...r.items];
@@ -104,11 +109,15 @@ export function ImageImporter({ rows: seed, commitLabel, onCommit }: Props) {
         const rejected = files.filter((f) => !isUsable(f.file) && !f.path.endsWith(".DS_Store") && !/^(thumbs\.db|desktop\.ini)$/i.test(f.file.name)).length;
         let map: Map<string, DropFile[]>;
         let un: DropFile[] = [];
+        let catNotes: string[] = [];
         if (slug) map = new Map([[slug, usable]]);
         else {
-            const m = matchFiles(usable, rowsRef.current);
-            map = m.assigned;
+            const cat = matchCatalog(usable, rowsRef.current.map((r) => ({ key: rk(r), slug: r.slug, skus: r.skus, variantSku: r.variantSku, sizeValue: r.sizeValue })));
+            const m = matchFiles(cat.rest, rowsRef.current.filter((r) => !r.variantSku));
+            map = cat.assigned;
+            for (const [k, l] of m.assigned) map.set(k, [...(map.get(k) ?? []), ...l]);
             un = m.unassigned;
+            catNotes = cat.notes;
         }
         const { added, overflow } = addToRows(map);
         if (un.length) setTray((t) => [...t, ...un.filter((u) => !t.some((x) => sig(x.file) === sig(u.file)))]);
@@ -116,7 +125,7 @@ export function ImageImporter({ rows: seed, commitLabel, onCommit }: Props) {
         if (un.length) parts.push(`${un.length} ảnh chưa khớp sản phẩm nào (xem khay "Chưa gán")`);
         if (overflow) parts.push(`${overflow} ảnh vượt giới hạn ${MAX_IMAGES} ảnh/sản phẩm`);
         if (rejected) parts.push(`${rejected} file bị bỏ (không phải jpg/png/webp hoặc > ${MAX_FILE_BYTES / 1024 / 1024}MB)`);
-        setNotice(parts.join("; ") + ".");
+        setNotice([parts.join("; ") + ".", ...catNotes].join(" "));
     }
 
     const dropOn = (slug?: string) => ({
@@ -164,10 +173,10 @@ export function ImageImporter({ rows: seed, commitLabel, onCommit }: Props) {
         setMsg("");
         try {
             const targets = rows.filter(isChanged).map((r) => ({ r, list: finalList(r) }));
-            const jobs = targets.flatMap(({ r, list }) => list.filter((i) => i.kind === "new" && !i.url).map((i) => ({ slug: r.slug, img: i })));
+            const jobs = targets.flatMap(({ r, list }) => list.filter((i) => i.kind === "new" && !i.url).map((i) => ({ slug: r.slug, key: rk(r), img: i })));
             if (jobs.length && !uploadReady) { setMsg("Chưa cấu hình Cloudinary (NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME)."); return; }
             const done = new Map<string, string>();
-            const mark = (j: { slug: string; img: Img }, patch: Partial<Img>) => patchRow(j.slug, (r) => ({ ...r, items: r.items.map((i) => (i.id === j.img.id ? { ...i, ...patch } : i)) }));
+            const mark = (j: { key: string; img: Img }, patch: Partial<Img>) => patchRow(j.key, (r) => ({ ...r, items: r.items.map((i) => (i.id === j.img.id ? { ...i, ...patch } : i)) }));
             let failed = 0, count = 0;
             setProgress({ done: 0, total: jobs.length });
             // 1) nén + băm (song song)  2) xin chữ ký 1 lần cho cả lô  3) tải lên (4 luồng)
@@ -197,7 +206,7 @@ export function ImageImporter({ rows: seed, commitLabel, onCommit }: Props) {
             });
             if (failed) { setMsg(`${failed} ảnh tải lên lỗi (đánh dấu đỏ). Bấm nút lần nữa để thử lại chỉ các ảnh lỗi; chưa lưu gì vào hệ thống.`); return; }
             const out: Record<string, string[]> = {};
-            for (const { r, list } of targets) out[r.slug] = list.map((i) => i.url ?? done.get(i.id)!).filter(Boolean);
+            for (const { r, list } of targets) out[rk(r)] = list.map((i) => i.url ?? done.get(i.id)!).filter(Boolean);
             const err = await onCommit(out);
             if (err) setMsg(err);
         } finally {
@@ -220,7 +229,7 @@ export function ImageImporter({ rows: seed, commitLabel, onCommit }: Props) {
             >
                 <p className="font-medium">Kéo thả ảnh hoặc cả thư mục vào đây</p>
                 <p className="max-w-[640px] text-xs font-light">
-                    Đặt tên <code>SKU_1.jpg</code>, <code>SKU_2.jpg</code>… (hoặc dùng slug thay SKU), hoặc thư mục tên SKU/slug chứa <code>1.jpg</code>, <code>2.jpg</code>…. Số 1 là ảnh chính. Ảnh không khớp sẽ vào khay &quot;Chưa gán&quot;.
+                    Đặt tên <code>SKU_1.jpg</code>, <code>SKU_2.jpg</code>… (hoặc dùng slug thay SKU), hoặc thư mục tên SKU/slug chứa <code>1.jpg</code>, <code>2.jpg</code>…. Số 1 là ảnh chính. Tên theo mã dòng cũng được: <code>CPM_/CPP_/ST_&lt;mã dòng&gt;</code> = ảnh sản phẩm 1/2/3; <code>PI_ &lt;mã dòng&gt;_050</code> = ảnh từng size. Ảnh không khớp sẽ vào khay &quot;Chưa gán&quot;.
                 </p>
                 <div className="flex gap-2">
                     <button type="button" className={btn.outline} onClick={() => fileIn.current?.click()}>Chọn ảnh</button>
@@ -250,7 +259,7 @@ export function ImageImporter({ rows: seed, commitLabel, onCommit }: Props) {
                                 <span className="truncate text-xs" title={f.path}>{f.path}</span>
                                 <select aria-label={`Gán ${f.file.name} vào sản phẩm`} defaultValue="" onChange={(e) => e.target.value && assignTray(f, e.target.value)} className="rounded-[8px] border border-black px-1 py-0.5 text-xs">
                                     <option value="">Gán vào…</option>
-                                    {rows.map((r) => <option key={r.slug} value={r.slug}>{r.name}</option>)}
+                                    {rows.map((r) => <option key={rk(r)} value={rk(r)}>{r.variantSku ? `${r.name} — ${r.variantSku}` : r.name}</option>)}
                                 </select>
                                 <button type="button" className={sm} onClick={() => setTray((t) => t.filter((x) => x !== f))}>Bỏ ảnh này</button>
                             </li>
@@ -264,20 +273,20 @@ export function ImageImporter({ rows: seed, commitLabel, onCommit }: Props) {
                     const fin = new Set(finalList(r).map((i) => i.id));
                     const conflict = r.items.some((i) => i.kind === "existing") && r.items.some((i) => i.kind !== "existing");
                     return (
-                        <li key={r.slug} {...dropOn(r.slug)} className={`rounded-[14px] border-2 p-3 ${over === r.slug ? "border-brand bg-brand/10" : "border-black"}`}>
+                        <li key={rk(r)} {...dropOn(rk(r))} className={`rounded-[14px] border-2 p-3 ${over === rk(r) ? "border-brand bg-brand/10" : "border-black"}`}>
                             <div className="flex flex-wrap items-center gap-2">
-                                <Badge tone={r.isNew ? "pink" : "blue"}>{r.isNew ? "Mới" : "Cập nhật"}</Badge>
-                                <b>{r.name}</b>
+                                <Badge tone={r.variantSku ? "gray" : r.isNew ? "pink" : "blue"}>{r.variantSku ? "Ảnh size" : r.isNew ? "Mới" : "Cập nhật"}</Badge>
+                                <b>{r.variantSku ? `↳ Size ${r.variantSku.slice(r.variantSku.lastIndexOf("-") + 1)}` : r.name}</b>
                                 <span className="text-xs font-light text-black/60">{r.skus.join(", ")}</span>
                                 <span className="ml-auto flex items-center gap-2">
                                     {conflict && (
-                                        <select aria-label={`Xử lý ảnh trùng cho ${r.name}`} value={r.mode} onChange={(e) => patchRow(r.slug, (x) => ({ ...x, mode: e.target.value as Mode }))} className="rounded-[8px] border border-black px-1 py-0.5 text-xs">
+                                        <select aria-label={`Xử lý ảnh trùng cho ${r.name}`} value={r.mode} onChange={(e) => patchRow(rk(r), (x) => ({ ...x, mode: e.target.value as Mode }))} className="rounded-[8px] border border-black px-1 py-0.5 text-xs">
                                             {(Object.keys(modeText) as Mode[]).map((m) => <option key={m} value={m}>{modeText[m]}</option>)}
                                         </select>
                                     )}
                                     <label className={`${sm} cursor-pointer`}>
                                         + Ảnh
-                                        <input type="file" multiple accept="image/jpeg,image/png,image/webp" hidden onChange={(e) => fromInput(e, r.slug)} />
+                                        <input type="file" multiple accept="image/jpeg,image/png,image/webp" hidden onChange={(e) => fromInput(e, rk(r))} />
                                     </label>
                                 </span>
                             </div>
@@ -299,10 +308,10 @@ export function ImageImporter({ rows: seed, commitLabel, onCommit }: Props) {
                                                 </div>
                                                 {i.status === "err" && <span className="text-[10px] text-red-700" title={i.err}>Lỗi tải lên</span>}
                                                 <div className="flex gap-1">
-                                                    <button type="button" className={sm} aria-label="Chuyển sang trái" disabled={idx === 0} onClick={() => move(r.slug, idx, -1)}>←</button>
-                                                    <button type="button" className={sm} aria-label="Chuyển sang phải" disabled={idx === r.items.length - 1} onClick={() => move(r.slug, idx, 1)}>→</button>
-                                                    <button type="button" className={sm} aria-label="Đặt làm ảnh chính" disabled={idx === 0} onClick={() => setMain(r.slug, idx)}>★</button>
-                                                    <button type="button" className={sm} aria-label="Bỏ ảnh" onClick={() => removeAt(r.slug, idx)}>✕</button>
+                                                    <button type="button" className={sm} aria-label="Chuyển sang trái" disabled={idx === 0} onClick={() => move(rk(r), idx, -1)}>←</button>
+                                                    <button type="button" className={sm} aria-label="Chuyển sang phải" disabled={idx === r.items.length - 1} onClick={() => move(rk(r), idx, 1)}>→</button>
+                                                    <button type="button" className={sm} aria-label="Đặt làm ảnh chính" disabled={idx === 0} onClick={() => setMain(rk(r), idx)}>★</button>
+                                                    <button type="button" className={sm} aria-label="Bỏ ảnh" onClick={() => removeAt(rk(r), idx)}>✕</button>
                                                 </div>
                                             </li>
                                         );

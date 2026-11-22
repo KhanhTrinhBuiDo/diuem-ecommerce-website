@@ -99,6 +99,74 @@ export function matchFiles(files: DropFile[], rows: MatchRow[]): MatchResult {
     return { assigned, unassigned };
 }
 
+export type CatalogRow = { key: string; slug: string; skus: string[]; variantSku?: string; sizeValue?: number };
+export type CatalogMatch = { assigned: Map<string, DropFile[]>; rest: DropFile[]; notes: string[] };
+
+/**
+ * Quy ước đặt tên ảnh của Dịu Em (mã dòng = SKU bỏ đoạn cuối, vd DE-HC-SHA-SCA-ALL):
+ *  - `CPM_<mã>` / `CPP_<mã>` / `ST_<mã>`  → ảnh chung của sản phẩm, thứ tự 1 / 2 / 3 (1 = ảnh chính)
+ *  - `PI_ <mã>_<ba số>` (vd _050, _R500 = túi refill; bộ quà `<mã>-001`) → ảnh riêng từng size.
+ *    Ghép theo THỨ TỰ nhỏ → lớn (refill xếp cuối) khi số ảnh = số size; nếu lệch số lượng chỉ ghép
+ *    những ảnh có đuôi trùng đuôi SKU, phần còn lại trả về khay "Chưa gán" để admin tự gán.
+ * Ảnh không theo quy ước này được trả về trong `rest` cho matchFiles xử lý tiếp.
+ */
+export function matchCatalog(files: DropFile[], rows: CatalogRow[]): CatalogMatch {
+    const tail = (sku: string) => sku.slice(sku.lastIndexOf("-") + 1).toUpperCase();
+    const famOf = (sku: string) => sku.slice(0, sku.lastIndexOf("-"));
+    const prod = new Map<string, CatalogRow>();
+    const vars = new Map<string, CatalogRow[]>();
+    for (const r of rows) {
+        if (r.variantSku) {
+            const f = nk(famOf(r.variantSku));
+            vars.set(f, [...(vars.get(f) ?? []), r]);
+        } else for (const s of r.skus) prod.set(nk(famOf(s)), r);
+    }
+    const base = (f: DropFile) => f.path.split("/").pop()!.replace(/\.[^.]+$/, "").trim();
+    const byProd = new Map<string, { f: DropFile; n: number }[]>();
+    const byFam = new Map<string, { f: DropFile; tok: string }[]>();
+    const rest: DropFile[] = [];
+    const notes: string[] = [];
+    for (const f of files) {
+        const b = base(f);
+        let m = /^(CPM|CPP|ST)[_\s-]+(.+)$/i.exec(b);
+        if (m) {
+            const fam = nk(m[2]).replace(/-\d{3}$/, "");
+            const r = prod.get(nk(m[2])) ?? prod.get(fam);
+            if (r) {
+                const n = { cpm: 1, cpp: 2, st: 3 }[m[1].toLowerCase() as "cpm" | "cpp" | "st"];
+                byProd.set(r.key, [...(byProd.get(r.key) ?? []), { f, n }]);
+                continue;
+            }
+        }
+        m = /^PI[_\s-]+(.+?)[_\s]+(R?\d{3})$/i.exec(b) ?? /^PI[_\s-]+(.+)-(\d{3})$/i.exec(b);
+        if (m && vars.has(nk(m[1]))) {
+            const fam = nk(m[1]);
+            byFam.set(fam, [...(byFam.get(fam) ?? []), { f, tok: m[2].toUpperCase() }]);
+            continue;
+        }
+        rest.push(f);
+    }
+    const assigned = new Map<string, DropFile[]>();
+    for (const [k, l] of byProd) assigned.set(k, l.sort((a, b) => a.n - b.n).map((x) => x.f));
+    const refill = (s: string) => /^R/i.test(s);
+    for (const [fam, imgs] of byFam) {
+        const vs = vars.get(fam)!;
+        const sortedV = [...vs].sort((a, b) => Number(refill(tail(a.variantSku!))) - Number(refill(tail(b.variantSku!))) || (a.sizeValue ?? 0) - (b.sizeValue ?? 0));
+        const sortedI = [...imgs].sort((a, b) => Number(refill(a.tok)) - Number(refill(b.tok)) || Number(a.tok.replace(/\D/g, "")) - Number(b.tok.replace(/\D/g, "")));
+        if (sortedI.length === sortedV.length) {
+            sortedI.forEach((x, i) => assigned.set(sortedV[i].key, [...(assigned.get(sortedV[i].key) ?? []), x.f]));
+            continue;
+        }
+        notes.push(`${famOf(vs[0].variantSku!)}: ${sortedI.length} ảnh nhưng ${sortedV.length} size → chỉ ghép ảnh trùng đuôi SKU, còn lại vào khay "Chưa gán".`);
+        for (const x of sortedI) {
+            const v = vs.find((r) => tail(r.variantSku!) === x.tok && !assigned.has(r.key));
+            if (v) assigned.set(v.key, [x.f]);
+            else rest.push(x.f);
+        }
+    }
+    return { assigned, rest, notes };
+}
+
 /** Thu nhỏ ảnh lớn (cạnh dài > 2000px hoặc > 2MB) sang WebP trước khi tải; giữ nguyên nếu không có lợi. */
 async function prepare(file: File): Promise<Blob> {
     try {

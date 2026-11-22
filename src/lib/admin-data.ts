@@ -16,21 +16,24 @@ export async function listProducts(): Promise<ProductRow[]> {
   const { data, error } = await sb
     .from("products")
     .select(
-      "id,slug,name,kind,status,is_featured,is_new,category_id,hero_material,short_description,usage_instructions,storage_instructions,warnings,shelf_life_months,pao_months,deleted_at,created_at,storefront_categories(name),product_variants(id,sku,size_value,size_unit,price_vnd,stock_qty,is_active),product_images(image_url,sort_order,is_primary)",
+      "id,slug,name,kind,status,is_featured,is_new,category_id,hero_material,short_description,usage_instructions,storage_instructions,warnings,ingredients,suitable_for,region,product_line,shelf_life_months,pao_months,deleted_at,created_at,storefront_categories(name),product_variants(id,sku,size_value,size_unit,price_vnd,stock_qty,is_active,label,is_default),product_images(image_url,sort_order,is_primary,variant_id)",
     )
     .order("created_at", { ascending: false });
   if (error) throw new Error(error.message);
   return (data ?? []).map((p) => {
     const cat = p.storefront_categories as unknown as { name: string } | null;
-    const imgs = [...((p.product_images as { image_url: string; sort_order: number; is_primary: boolean }[]) ?? [])].sort((a, b) => Number(b.is_primary) - Number(a.is_primary) || a.sort_order - b.sort_order);
+    const allImgs = (p.product_images as { image_url: string; sort_order: number; is_primary: boolean; variant_id: string | null }[]) ?? [];
+    const imgs = allImgs.filter((i) => !i.variant_id).sort((a, b) => Number(b.is_primary) - Number(a.is_primary) || a.sort_order - b.sort_order);
     return {
       id: p.id, slug: p.slug, name: p.name, kind: p.kind, status: p.status, is_featured: p.is_featured, is_new: Boolean(p.is_new),
       category_id: p.category_id, category_name: cat?.name ?? "",
       hero_material: p.hero_material ?? "", short_description: p.short_description ?? "", usage_instructions: p.usage_instructions ?? "",
       storage_instructions: p.storage_instructions ?? "", warnings: p.warnings ?? "",
+      ingredients: p.ingredients ?? "", suitable_for: p.suitable_for ?? "", region: p.region ?? "", product_line: p.product_line ?? "",
       shelf_life_months: p.shelf_life_months, pao_months: p.pao_months, deleted: p.deleted_at !== null,
-      variants: ((p.product_variants as { id: string; sku: string; size_value: string | number; size_unit: SizeUnit; price_vnd: string | number; stock_qty: number; is_active: boolean }[]) ?? []).map((v) => ({
+      variants: ((p.product_variants as { id: string; sku: string; size_value: string | number; size_unit: SizeUnit; price_vnd: string | number; stock_qty: number; is_active: boolean; label: string | null; is_default: boolean }[]) ?? []).map((v) => ({
         id: v.id, sku: v.sku, size_value: Number(v.size_value), size_unit: v.size_unit, price_vnd: Number(v.price_vnd), stock_qty: v.stock_qty, is_active: v.is_active,
+        label: v.label, is_default: v.is_default, images: allImgs.filter((i) => i.variant_id === v.id).sort((a, b) => a.sort_order - b.sort_order).map((i) => i.image_url),
       })),
       images: imgs.map((i) => i.image_url),
     } satisfies ProductRow;

@@ -142,7 +142,11 @@ export function BulkImages({ products }: { products: ProductRow[] }) {
   const [open, setOpen] = useState(false);
   const [ok, setOk] = useState(false);
   const [gen, setGen] = useState(0);
-  const rows: SeedRow[] = products.filter((p) => !p.deleted).map((p) => ({ slug: p.slug, name: p.name, isNew: false, skus: p.variants.map((v) => v.sku), existing: p.images, links: [] }));
+  // mỗi sản phẩm = 1 dòng ảnh chung + mỗi size = 1 dòng ảnh riêng (PI_)
+  const rows: SeedRow[] = products.filter((p) => !p.deleted).flatMap((p) => [
+    { slug: p.slug, name: p.name, isNew: false, skus: p.variants.map((v) => v.sku), existing: p.images, links: [] },
+    ...p.variants.filter((v) => v.is_active).map((v) => ({ slug: p.slug, name: p.name, isNew: false, skus: [v.sku], variantSku: v.sku, sizeValue: v.size_value, existing: v.images ?? [], links: [] })),
+  ]);
 
   async function commit(images: Record<string, string[]>): Promise<string | null> {
     const r = await saveProductImages(images);
