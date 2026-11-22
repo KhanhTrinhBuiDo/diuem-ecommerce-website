@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { ImageOrPlaceholder } from "@/components/ui/ImageOrPlaceholder";
 import { siteImage } from "@/data/site-images";
-import { getNewProducts } from "@/data/catalog";
+import type { Product } from "@/components/home/ProductCard";
 import { megaMenu } from "@/data/menu";
 import type { NavLink } from "@/config/site";
 
@@ -25,7 +25,7 @@ type Key = "products" | "new";
  * - "SẢN PHẨM" → danh mục (chăm sóc mặt/tóc/cơ thể...) + 2 ảnh + "XEM TẤT CẢ" (Figma "Noti - Xem Sản phẩm", chế độ 1).
  * - "NEW ARRIVALS" → các sản phẩm mới do admin gán nhãn + "XEM TẤT CẢ >" (chế độ 2 của Figma).
  */
-export function NavMenu({ items }: { items: NavLink[] }) {
+export function NavMenu({ items, newProducts }: { items: NavLink[]; newProducts: Product[] }) {
   const [open, setOpen] = useState<Key | null>(null);
   const timer = useRef<number | undefined>(undefined);
   const wraps = useRef<Partial<Record<Key, HTMLDivElement | null>>>({});
@@ -76,7 +76,7 @@ export function NavMenu({ items }: { items: NavLink[] }) {
             {open === k && (
               <div className="absolute inset-x-0 top-full z-50 pt-0">
                 <div className="mx-auto w-[min(1536px,calc(100%-100px))] rounded-[20px] bg-white shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
-                  {k === "products" ? <GroupsView /> : <NewArrivalsView href={item.href} onNavigate={() => setOpen(null)} />}
+                  {k === "products" ? <GroupsView /> : <NewArrivalsView href={item.href} products={newProducts} onNavigate={() => setOpen(null)} />}
                 </div>
               </div>
             )}
@@ -124,8 +124,7 @@ function GroupsView() {
   );
 }
 
-function NewArrivalsView({ href, onNavigate }: { href: string; onNavigate: () => void }) {
-  const products = getNewProducts(4);
+function NewArrivalsView({ href, products, onNavigate }: { href: string; products: Product[]; onNavigate: () => void }) {
   return (
     <div className="p-[clamp(24px,2.1vw,36px)]">
       <Link href={href} onClick={onNavigate} className="mb-5 inline-flex items-center gap-4 text-[clamp(16px,1.27vw,22px)] font-bold leading-[27px] hover:text-brand">

@@ -1,32 +1,25 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductDetailPage } from "@/components/product/ProductDetailPage";
-import { collections, getCollection } from "@/data/catalog";
-import { getProductDetail, productDetails, productHref, sampleCard } from "@/data/products";
+import { getCatalog, hrefOf, related, resolveCollection, toCard, toDetail, topCategory } from "@/lib/storefront";
 
-/** Chỉ các cặp (danh mục × sản phẩm) có trong data mới có trang; còn lại 404. */
-export const dynamicParams = false;
+export const revalidate = 60;
 
 type Params = { collection: string; slug: string };
 
-export function generateStaticParams(): Params[] {
-  return collections.flatMap((c) => productDetails.map((p) => ({ collection: c.slug, slug: p.slug })));
-}
-
 export async function generateMetadata({ params }: { params: Promise<Params> }): Promise<Metadata> {
-  const p = getProductDetail((await params).slug);
-  return { title: p?.name ?? "Sản phẩm" };
+  const { slug } = await params;
+  const p = (await getCatalog()).products.find((x) => x.slug === slug);
+  return { title: p?.name ?? "Sản phẩm", description: p?.shortDescription.slice(0, 160) || undefined };
 }
 
 export default async function ProductPage({ params }: { params: Promise<Params> }) {
-  const { collection: cslug, slug } = await params;
-  const collection = getCollection(cslug);
-  const product = getProductDetail(slug);
-  if (!collection || !product) notFound();
-
-  // TODO(supabase): gợi ý theo danh mục/tag thật. Hiện dùng thẻ mẫu.
-  const suggestions = [1, 2, 3].map((i) => sampleCard(`sg-${i}`, collection.slug));
-  const related = [1, 2, 3, 4].map((i) => sampleCard(`rl-${i}`, collection.slug));
-
-  return <ProductDetailPage product={product} collection={collection} href={productHref(collection.slug, product.slug)} suggestions={suggestions} related={related} />;
+  const { slug } = await params;
+  const cat = await getCatalog();
+  const p = cat.products.find((x) => x.slug === slug);
+  if (!p) notFound();
+  // Breadcrumb luôn theo danh mục cha thật của sản phẩm (URL cũ/sai danh mục vẫn mở được)
+  const collection = resolveCollection(cat, topCategory(p).slug)!.collection;
+  const near = related(cat.products, p, 4).map(toCard);
+  return <ProductDetailPage product={toDetail(p)} collection={collection} href={hrefOf(p)} suggestions={near.slice(0, 3)} related={near} />;
 }

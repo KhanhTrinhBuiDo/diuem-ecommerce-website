@@ -1,10 +1,11 @@
 import Link from "next/link";
 import { ImageOrPlaceholder } from "@/components/ui/ImageOrPlaceholder";
+import type { Variant } from "@/data/products";
 import { formatVND } from "@/lib/format";
 
 /**
  * Kiểu dữ liệu sản phẩm tối thiểu cho thẻ sản phẩm.
- * TODO(supabase): thay bằng kiểu sinh từ database khi có bảng `products`.
+ * Dựng từ Supabase ở src/lib/storefront.ts (toCard).
  */
 export type Product = {
   id: string;
@@ -12,8 +13,10 @@ export type Product = {
   /** Giá (VND, số nguyên) */
   price: number;
   image: string | null;
-  /** TODO(product-detail): đổi thành link trang chi tiết sản phẩm khi có */
   href: string;
+  /** Dùng cho nút thêm nhanh vào giỏ (thẻ nhỏ) */
+  variants?: Variant[];
+  variantId?: string;
 };
 
 type Props = {

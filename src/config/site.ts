@@ -43,7 +43,7 @@ export const mainNav: NavLink[] = [
 
 /** Các link tiện ích trên header (tìm kiếm / tài khoản / giỏ hàng) */
 export const utilityLinks = {
-  search: { label: "Tìm kiếm", href: "/tim-kiem", ready: false },
+  search: { label: "Tìm kiếm", href: "/tim-kiem", ready: true },
   // Header dùng popup đăng nhập; href này chỉ là dự phòng. TODO(auth): đã đăng nhập → /tai-khoan
   account: { label: "Tài khoản", href: "/dang-nhap", ready: false },
   cart: { label: "Giỏ hàng", href: "/gio-hang", ready: true },

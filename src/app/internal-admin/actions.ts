@@ -1,6 +1,7 @@
 "use server";
 
 import { createHash } from "node:crypto";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { requireAdmin } from "@/lib/admin-auth";
 import { orderNext, type ActionResult, type CategoryRow, type CouponRow, type OrderStatus, type ProductInput } from "@/lib/admin-types";
 import { isOwnImage, isSlug, validateCategory, validateCoupon, validateProduct } from "@/lib/admin-validate";
@@ -24,6 +25,12 @@ function dbError(e: { code?: string; message: string }): string {
 const nz = (s: string) => (s.trim() === "" ? null : s.trim());
 
 /* ───────── Sản phẩm ───────── */
+/** Xóa cache cửa hàng để khách thấy thay đổi ngay (nếu không, tối đa 60 giây). */
+function bust() {
+  revalidateTag("catalog");
+  revalidatePath("/", "layout");
+}
+
 export async function saveProduct(input: ProductInput): Promise<ActionResult<{ id: string }>> {
   await requireAdmin();
   const err = validateProduct(input);
@@ -73,6 +80,7 @@ export async function saveProduct(input: ProductInput): Promise<ActionResult<{ i
     const { error } = await sb.from("product_images").insert(input.images.map((image_url, i) => ({ product_id: id, image_url, sort_order: i, is_primary: i === 0 })));
     if (error) return fail(dbError(error));
   }
+  bust();
   return { ok: true, id: id! };
 }
 
@@ -81,6 +89,7 @@ export async function setProductDeleted(id: string, deleted: boolean): Promise<A
   await requireAdmin();
   const sb = await createClient();
   const { error } = await sb.from("products").update({ deleted_at: deleted ? new Date().toISOString() : null }).eq("id", id);
+  if (!error) bust();
   return error ? fail(dbError(error)) : { ok: true };
 }
 
@@ -128,6 +137,7 @@ export async function saveCategory(c: CategoryRow, isNew: boolean): Promise<Acti
   const sb = await createClient();
   const row = { parent_id: c.parent_id || null, slug: c.slug.trim(), name: c.name.trim(), sort_order: c.sort_order, min_price_vnd: c.min_price_vnd };
   const { error } = isNew ? await sb.from("storefront_categories").insert(row) : await sb.from("storefront_categories").update(row).eq("id", c.id);
+  if (!error) bust();
   return error ? fail(dbError(error)) : { ok: true };
 }
 export async function deleteCategory(id: string): Promise<ActionResult> {
@@ -267,6 +277,7 @@ export async function importProducts(formData: FormData): Promise<ImportResponse
   const toSet = Object.entries(finalImages).filter(([slug, urls]) => ids.has(slug) && urls.length > 0);
   const imgErr = await applyImages(sb, toSet.map(([slug, urls]) => ({ id: ids.get(slug)!, urls })));
   if (imgErr) return { ok: false, error: imgErr };
+  bust();
   return { ok: true, committed: true, summary };
 }
 
@@ -330,6 +341,7 @@ export async function saveProductImages(images: Record<string, string[]>): Promi
       }
     }
   }
+  bust();
   return { ok: true };
 }
 

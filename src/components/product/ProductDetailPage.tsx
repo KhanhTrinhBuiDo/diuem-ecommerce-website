@@ -27,7 +27,7 @@ export function ProductDetailPage({ product, collection, href, suggestions, rela
         items={[
           { label: "Sản phẩm", href: "/san-pham" },
           { label: collection.name, href: `/san-pham/${collection.slug}` },
-          { label: product.category },
+          ...(product.category !== collection.name ? [{ label: product.category }] : []),
           { label: product.name },
         ]}
       />

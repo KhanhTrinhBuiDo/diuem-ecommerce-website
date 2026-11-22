@@ -1,9 +1,7 @@
 import type { Activity } from "@/components/home/ActivitySection";
 import type { CategoryTile } from "@/components/home/CategoryTiles";
 import type { HeroSlide } from "@/components/home/HeroBanner";
-import type { Product } from "@/components/home/ProductCard";
 import { homeSectionLinks, mainNav } from "@/config/site";
-import { productHref } from "@/data/products";
 import { siteImage } from "@/data/site-images";
 
 /**
@@ -29,18 +27,6 @@ export const categoryTiles: CategoryTile[] = [
   { id: "cat-body", name: "Chăm sóc cơ thể", href: "/san-pham/cham-soc-co-the", image: siteImage("Homepage/Catology/cothe") },
   { id: "cat-4", name: "Ngành khác", href: "/san-pham", image: siteImage("Homepage/Catology/khac") },
 ];
-
-// Sản phẩm mẫu: Figma dùng cùng một mẫu "Dầu Gội Hoa Bưởi Thế Hệ Mới – 250.000 VND" cho mọi ô.
-const sample = (id: string): Product => ({
-  id,
-  name: "Dầu Gội Hoa Bưởi Thế Hệ Mới",
-  price: 250000,
-  image: siteImage("detail/gallery-1"),
-  href: productHref("cham-soc-toc", "dau-goi-hoa-buoi-the-he-moi"),
-});
-export const bestSellers: Product[] = ["bs-1", "bs-2", "bs-3", "bs-4"].map(sample);
-export const newProducts: Product[] = ["new-1", "new-2", "new-3", "new-4"].map(sample);
-export const giftCombos: Product[] = ["combo-1", "combo-2", "combo-3", "combo-4"].map(sample);
 
 export const homeSections = {
   bestBanner: { title: "BÁN CHẠY NHẤT", image: siteImage("Homepage/Sub_banner/1"), cta: { href: homeSectionLinks.bestSellers.href } },
