@@ -29,7 +29,7 @@ const ICONS: Record<OrderStep["key"], string> = {
   confirmed: "M7 4h10v16H7zM10 8h4M10 12h4M10 16h2",
   handed: "M3 7h11v9H3zM14 10h4l3 3v3h-7M7 19a1.5 1.5 0 100-.01M17 19a1.5 1.5 0 100-.01",
   received: "M12 4v9m0 0l-3.5-3.5M12 13l3.5-3.5M5 15v4h14v-4",
-  returned: "M4 14c3 0 4 1 6 1s3-2 5-2h5M12 4l1.5 3 3.3.5-2.4 2.3.6 3.3-3-1.6-3 1.6.6-3.3L7.2 7.5 10.5 7z",
+  placed: "M5 8h14l-1 12H6zM9 8a3 3 0 016 0",
 };
 
 /** Thanh tiến trình đơn hàng (Figma "Tình trạng đơn giao"): 4 mốc nối nhau bằng đường hồng. */

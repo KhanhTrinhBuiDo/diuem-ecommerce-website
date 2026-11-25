@@ -7,13 +7,13 @@ import { Header } from "@/components/layout/Header";
 /** Layout cửa hàng (khách): header + footer + giỏ hàng. Khu vực /admin dùng layout riêng. */
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   return (
-    <CartProvider>
-      <AuthProvider>
+    <AuthProvider>
+      <CartProvider>
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
         <CartToast />
-      </AuthProvider>
-    </CartProvider>
+      </CartProvider>
+    </AuthProvider>
   );
 }

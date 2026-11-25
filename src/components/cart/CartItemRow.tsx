@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { priceOf, useCart, type CartItem } from "@/components/cart/CartProvider";
+import { priceOf, useCart, variantOf, type CartItem } from "@/components/cart/CartProvider";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { ImageOrPlaceholder } from "@/components/ui/ImageOrPlaceholder";
 import { Stepper } from "@/components/ui/Stepper";
@@ -38,6 +38,7 @@ export function CartItemRow({ item }: { item: CartItem }) {
               </select>
               <Stepper variant="pill" value={item.qty} onChange={(q) => setQty(item.key, q)} />
             </div>
+            {!variantOf(item).available && <p role="status" className="text-sm font-medium text-red-600">Hết hàng – sản phẩm này sẽ không được đặt. Chọn dung tích khác hoặc xóa khỏi giỏ.</p>}
           </div>
           <p className="text-[clamp(14px,1.04vw,18px)] font-bold">{formatVND(priceOf(item) * item.qty)}</p>
         </div>

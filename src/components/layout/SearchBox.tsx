@@ -3,7 +3,7 @@ import { utilityLinks } from "@/config/site";
 
 type Props = { className?: string; id?: string };
 
-/** Ô tìm kiếm. Form GET → /tim-kiem?q=... (trang kết quả: placeholder, sẽ nối với Supabase sau). */
+/** Ô tìm kiếm. Form GET → /tim-kiem?q=... (trang kết quả đã nối Supabase). */
 export function SearchBox({ className = "", id = "site-search" }: Props) {
   return (
     <form

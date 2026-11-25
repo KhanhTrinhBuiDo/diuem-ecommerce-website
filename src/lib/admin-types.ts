@@ -5,8 +5,7 @@ export const productStatusText: Record<ProductStatus, string> = { draft: "Nháp"
 export type SizeUnit = "ml" | "g" | "pcs" | "set";
 export const sizeUnits: SizeUnit[] = ["ml", "g", "pcs", "set"];
 
-export type VariantRow = {
-  id?: string; sku: string; size_value: number; size_unit: SizeUnit; price_vnd: number; stock_qty: number; is_active: boolean;
+export type VariantRow = { id?: string; sku: string; size_value: number; size_unit: SizeUnit; price_vnd: number; stock_qty: number; is_active: boolean;
   /** Nhãn hiển thị ("Túi refill 450 ml", "Hũ 10 g"); undefined = không đổi khi lưu */ label?: string | null;
   is_default?: boolean;
   /** Ảnh riêng của size này (PI_) */ images?: string[];
@@ -74,6 +73,7 @@ export type OrderRow = {
   items: OrderItemRow[];
 };
 
-export type CouponRow = { id: string; code: string; discount_type: "percent" | "fixed"; discount_value: number; min_order_vnd: number; starts_at: string; ends_at: string; is_active: boolean };
+export type CouponRow = { id: string; code: string; discount_type: "percent" | "fixed"; discount_value: number; min_order_vnd: number; starts_at: string; ends_at: string; is_active: boolean;
+  /** 0 = không giới hạn (lưu null trong DB) */ max_uses: number; max_discount_vnd: number; used_count: number };
 
 export type ActionResult<T = unknown> = ({ ok: true } & T) | { ok: false; error: string };

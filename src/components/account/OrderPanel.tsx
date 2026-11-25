@@ -17,13 +17,17 @@ export function OrderPanel({ order, back }: { order: Order; back: { label: strin
   const [reviewOpen, setReviewOpen] = useState(false);
   const [note, setNote] = useState("");
   const completed = order.status === "completed";
-  const statusText =
-    order.status === "completed" ? "Đơn hàng đã hoàn thành" : order.status === "shipping" ? "Đơn hàng đang vận chuyển" : order.status === "cancelled" ? "Đơn hàng đã hủy" : "Đơn hàng đã hoàn trả";
+  const statusText = {
+    pending: "Đơn hàng đang chờ xác nhận",
+    confirmed: "Đơn hàng đã được xác nhận",
+    shipping: "Đơn hàng đang vận chuyển",
+    completed: "Đơn hàng đã hoàn thành",
+    cancelled: "Đơn hàng đã hủy",
+  }[order.status];
 
   function rebuy() {
     for (const it of order.items) {
-      const [productId, variantId] = it.id.split(":");
-      cart.add({ productId, name: it.name, image: it.image, href: it.href, variantId, variants: [{ id: variantId, label: it.variant, price: it.price, available: true }] }, it.qty);
+      cart.add({ productId: it.id.split(":")[0], name: it.name, image: it.image, href: it.href, variantId: it.sku, variants: [{ id: it.sku, label: it.variant, price: it.price, available: true }] }, it.qty);
     }
     router.push("/gio-hang");
   }
@@ -65,7 +69,11 @@ export function OrderPanel({ order, back }: { order: Order; back: { label: strin
       <section className="bg-[#fffdf7]">
         <div className="flex flex-col gap-6 px-5 pb-12 pt-8 sm:px-[50px] md:flex-row md:justify-between">
           <p className="text-[clamp(11px,0.75vw,13px)] font-light">
-            {completed ? `Nếu hàng nhận được có vấn đề, bạn có thể yêu cầu Trả hàng/Hoàn tiền trước ${order.returnDeadline}` : "Đơn hàng đang được xử lý. Bạn có thể theo dõi tình trạng ngay tại đây."}
+            {completed
+              ? order.returnDeadline
+                ? `Nếu hàng nhận được có vấn đề, bạn có thể yêu cầu Trả hàng/Hoàn tiền trước ${order.returnDeadline}`
+                : "Nếu hàng nhận được có vấn đề, vui lòng liên hệ Dịu Em để được hỗ trợ đổi trả." /* TODO(content): hạn đổi trả chờ khách hàng chốt chính sách */
+              : order.status === "cancelled" ? "Đơn hàng đã được hủy." : "Đơn hàng đang được xử lý. Bạn có thể theo dõi tình trạng ngay tại đây."}
           </p>
           <div className="flex w-full flex-col gap-[13px] md:w-[267px] md:flex-none">
             {/* TODO(reviews): chỉ cho đánh giá khi đơn đã hoàn thành & chưa quá hạn đánh giá (chốt chính sách ở câu hỏi mở 18). */}
@@ -99,6 +107,7 @@ export function OrderPanel({ order, back }: { order: Order; back: { label: strin
             <p className="text-[clamp(13px,1.04vw,18px)] font-light">{order.address.line}</p>
           </div>
           <div className="text-[clamp(12px,1.04vw,18px)] font-light text-black/50 md:text-right">
+            <p>{order.paymentLabel}</p>
             <p>{order.carrier}</p>
             <p className="break-all">{order.trackingCode}</p>
           </div>

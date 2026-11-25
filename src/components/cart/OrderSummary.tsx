@@ -1,39 +1,71 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { quoteCoupon } from "@/app/(site)/gio-hang/actions";
 import { CartItemRow } from "@/components/cart/CartItemRow";
-import { priceOf, useCart } from "@/components/cart/CartProvider";
+import { isOrderable, priceOf, useCart } from "@/components/cart/CartProvider";
 import { Checkbox } from "@/components/ui/Checkbox";
 import { PinkBar } from "@/components/ui/PinkBar";
+import { FREESHIP_FROM_VND, shippingFee } from "@/lib/checkout";
 import { formatVND } from "@/lib/format";
 
-/** Đơn từ mức này được freeship (theo Figma "Freeship cho đơn từ 300k"). TODO(shipping): phí giao hàng khi dưới mức này. */
-export const FREESHIP_FROM = 300000;
+/** Đơn từ mức này được freeship (theo Figma "Freeship cho đơn từ 300k"). */
+export const FREESHIP_FROM = FREESHIP_FROM_VND;
 
 const row = "flex items-center justify-between gap-4 border-b border-black py-2 text-[clamp(14px,1.04vw,18px)] font-light";
 
 /**
  * Cột phải (Figma right): Giỏ hàng, mã ưu đãi, chi tiết thanh toán, phương thức thanh toán, nút THANH TOÁN NGAY.
  * Nút nằm trong <form id="checkout"> bên trái nhờ thuộc tính `form`.
- * TODO(voucher): kiểm tra mã ưu đãi trên server (bảng `vouchers`).
- * TODO(payment): tích hợp cổng OnePay nội địa/quốc tế; trạng thái đơn cập nhật qua webhook.
+ * Mã ưu đãi: xem trước qua `quoteCoupon`; `place_order` kiểm tra và tính lại khi đặt hàng.
+ * Hiện chỉ thanh toán khi nhận hàng (COD). TODO(payment): OnePay nội địa/quốc tế + webhook cập nhật trạng thái.
  */
-export function OrderSummary({ agreeError }: { agreeError?: string }) {
+export type AppliedCoupon = { code: string; discount: number };
+
+export function OrderSummary({
+  agreeError, submitError, submitting, coupon, onCoupon,
+}: { agreeError?: string; submitError?: string; submitting?: boolean; coupon: AppliedCoupon | null; onCoupon: (c: AppliedCoupon | null) => void }) {
   const { items, ready, toggleAll, clear } = useCart();
   const [code, setCode] = useState("");
   const [voucherMsg, setVoucherMsg] = useState("");
-  const [pay, setPay] = useState<"domestic" | "international">("domestic");
 
-  const selected = items.filter((i) => i.selected);
+  // Chỉ tính các dòng được chọn VÀ còn hàng
+  const selected = items.filter(isOrderable);
   const subtotal = selected.reduce((s, i) => s + priceOf(i) * i.qty, 0);
-  const discount = 0; // TODO(voucher)
-  const shipFree = subtotal >= FREESHIP_FROM;
-  const total = Math.max(0, subtotal - discount); // phí ship chưa tính khi dưới mức freeship
-  function applyVoucher() {
-    // TODO(voucher): gọi server kiểm tra mã
-    setVoucherMsg(code.trim() ? "Mã ưu đãi chưa hợp lệ hoặc chưa được kích hoạt." : "Vui lòng nhập mã ưu đãi.");
+  const discount = coupon ? Math.min(coupon.discount, subtotal) : 0;
+  const fee = selected.length ? shippingFee(subtotal) : 0;
+  const total = Math.max(0, subtotal - discount) + fee;
+  const [checking, setChecking] = useState(false);
+  async function applyVoucher() {
+    if (!code.trim()) return setVoucherMsg("Vui lòng nhập mã ưu đãi.");
+    if (!subtotal) return setVoucherMsg("Hãy chọn sản phẩm còn hàng trước khi áp dụng mã.");
+    setChecking(true);
+    const r = await quoteCoupon(code, subtotal).catch(() => ({ ok: false as const, message: "Không kết nối được máy chủ." }));
+    setChecking(false);
+    if (r.ok) {
+      onCoupon({ code: r.code, discount: r.discount });
+      setVoucherMsg(`Đã áp dụng mã ${r.code}: giảm ${formatVND(r.discount)}.`);
+      setCode("");
+    } else {
+      onCoupon(null);
+      setVoucherMsg(r.message);
+    }
   }
+  // Giỏ đổi (số lượng, bỏ chọn…) → tính lại mức giảm; không còn đủ điều kiện thì gỡ mã
+  const appliedCode = coupon?.code;
+  useEffect(() => {
+    if (!appliedCode) return;
+    let alive = true;
+    if (!subtotal) { onCoupon(null); return; }
+    void quoteCoupon(appliedCode, subtotal).then((r) => {
+      if (!alive) return;
+      if (r.ok) onCoupon({ code: r.code, discount: r.discount });
+      else { onCoupon(null); setVoucherMsg(`Mã ${appliedCode} đã được gỡ: ${r.message}`); }
+    });
+    return () => { alive = false; };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subtotal, appliedCode]);
   const allSelected = items.length > 0 && selected.length === items.length;
 
   return (
@@ -89,11 +121,16 @@ export function OrderSummary({ agreeError }: { agreeError?: string }) {
               }
             }} placeholder="Nhập mã ưu đãi của bạn"
             className="min-w-0 flex-1 bg-white px-6 text-[clamp(15px,1.04vw,18px)] font-extralight placeholder:text-black/70 lg:pl-[50px]" />
-          <button type="button" onClick={applyVoucher} className="bg-black px-6 text-[clamp(15px,1.04vw,18px)] font-bold text-white hover:opacity-80 lg:px-9">
+          <button type="button" onClick={applyVoucher} disabled={checking} className="bg-black disabled:opacity-50 px-6 text-[clamp(15px,1.04vw,18px)] font-bold text-white hover:opacity-80 lg:px-9">
             Áp dụng
           </button>
         </div>
-        <p role="status" className="min-h-5 px-4 pt-1 text-sm text-brand lg:px-[50px]">{voucherMsg}</p>
+        <p role="status" className="min-h-5 px-4 pt-1 text-sm text-brand lg:px-[50px]">
+          {voucherMsg}
+          {coupon && (
+            <button type="button" onClick={() => { onCoupon(null); setVoucherMsg(""); }} className="ml-3 text-black underline">Gỡ mã</button>
+          )}
+        </p>
       </div>
 
       <section aria-labelledby="pay-detail" className="flex flex-col">
@@ -101,17 +138,22 @@ export function OrderSummary({ agreeError }: { agreeError?: string }) {
         <dl>
           <div className={row}><dt>Tạm tính</dt><dd className="font-bold">{formatVND(subtotal)}</dd></div>
           <div className={row}><dt>Voucher ưu đãi</dt><dd className="font-bold">{formatVND(discount)}</dd></div>
-          <div className={row}><dt>Phí giao hàng</dt><dd className="font-bold">{!selected.length || shipFree ? "Miễn phí" : "Tính khi giao"}</dd></div>
+          <div className={row}><dt>Phí giao hàng</dt><dd className="font-bold">{!selected.length || fee === 0 ? "Miễn phí" : formatVND(fee)}</dd></div>
           <div className={row}><dt>Thành tiền</dt><dd className="font-bold">{formatVND(total)}</dd></div>
         </dl>
       </section>
 
       <fieldset className="flex flex-col">
         <legend className="mb-2 text-[clamp(22px,1.85vw,32px)] font-bold">Phương thức thanh toán</legend>
-        {([["domestic", "Cổng thanh toán nội địa OnePay"], ["international", "Cổng thanh toán quốc tế OnePay"]] as const).map(([v, label]) => (
-          <label key={v} className={`${row} cursor-pointer justify-start gap-3`}>
-            <input type="radio" name="payment" form="checkout" value={v} checked={pay === v} onChange={() => setPay(v)} className="size-5 accent-[#2e54ff]" />
-            {label}
+        <label className={`${row} cursor-pointer justify-start gap-3`}>
+          <input type="radio" name="payment" form="checkout" value="cod" defaultChecked className="size-5 accent-[#2e54ff]" />
+          Thanh toán khi nhận hàng (COD)
+        </label>
+        {/* TODO(payment): mở lại khi tích hợp OnePay */}
+        {["Cổng thanh toán nội địa OnePay", "Cổng thanh toán quốc tế OnePay"].map((label) => (
+          <label key={label} className={`${row} justify-start gap-3 opacity-40`}>
+            <input type="radio" name="payment" form="checkout" disabled className="size-5" />
+            {label} <span className="text-xs">(sắp ra mắt)</span>
           </label>
         ))}
       </fieldset>
@@ -122,8 +164,10 @@ export function OrderSummary({ agreeError }: { agreeError?: string }) {
       </label>
       {agreeError && <p role="alert" className="text-sm text-red-600">{agreeError}</p>}
 
-      <button type="submit" form="checkout" disabled={!selected.length} className="h-[52px] w-full rounded-full bg-black text-[clamp(16px,1.27vw,22px)] font-bold text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40">
-        THANH TOÁN NGAY
+      {submitError && <p role="alert" className="text-sm text-red-600">{submitError}</p>}
+
+      <button type="submit" form="checkout" disabled={!selected.length || submitting} className="h-[52px] w-full rounded-full bg-black text-[clamp(16px,1.27vw,22px)] font-bold text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40">
+        {submitting ? "ĐANG XỬ LÝ…" : "ĐẶT HÀNG"}
       </button>
     </section>
   );

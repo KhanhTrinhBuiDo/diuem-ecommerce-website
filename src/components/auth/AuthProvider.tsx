@@ -3,6 +3,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { AuthModal, type AuthMode } from "@/components/auth/AuthModal";
 import { resolveAfterLogin } from "@/lib/after-login";
+import { CART_STORAGE_KEY } from "@/lib/checkout";
 import { createClient } from "@/lib/supabase/client";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
@@ -43,6 +44,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     if (isSupabaseConfigured()) await createClient().auth.signOut();
+    // Giỏ của tài khoản đã nằm trên server; xóa bản trong trình duyệt để người dùng sau trên máy chung không thấy.
+    try { localStorage.removeItem(CART_STORAGE_KEY); } catch { /* bỏ qua */ }
     setUser(null);
     setAdminHref(null);
     window.location.assign("/");

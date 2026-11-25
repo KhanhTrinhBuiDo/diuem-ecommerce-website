@@ -10,9 +10,10 @@ export type ShippingErrors = Partial<Record<"name" | "phone" | "email" | "provin
  * Cột trái "Thông tin vận chuyển" (Figma left).
  * TODO(address): Tỉnh/Thành, Quận/Huyện nên là danh sách chọn (API hành chính VN); hiện là ô nhập tay.
  * TODO(policy): nội dung "Các chính sách mua hàng" chờ khách hàng cung cấp.
- * TODO(auth): đã đăng nhập → tự điền từ hồ sơ, lưu địa chỉ.
+ * Đã đăng nhập → tự điền hồ sơ + địa chỉ mặc định trong sổ địa chỉ.
+ * Quận/Huyện được lưu vào cột `orders.ship_ward`.
  */
-export function ShippingForm({ errors }: { errors: ShippingErrors }) {
+export function ShippingForm({ errors, defaults }: { errors: ShippingErrors; defaults?: { name?: string; phone?: string; email?: string; province?: string; district?: string; address?: string } }) {
   const [other, setOther] = useState(false);
   const [policy, setPolicy] = useState(false);
   return (
@@ -38,14 +39,14 @@ export function ShippingForm({ errors }: { errors: ShippingErrors }) {
       </div>
 
       <div className="flex max-w-[754px] flex-col gap-[0px]">
-        <Field name="name" label="Họ và tên" placeholder="Nhập họ tên của bạn" autoComplete="name" required error={errors.name} />
-        <Field name="phone" label="Số điện thoại" type="tel" placeholder="Nhập số điện thoại" autoComplete="tel" inputMode="tel" required error={errors.phone} />
-        <Field name="email" label="Email" type="email" placeholder="Nhập email của bạn" autoComplete="email" error={errors.email} />
+        <Field name="name" label="Họ và tên" placeholder="Nhập họ tên của bạn" autoComplete="name" defaultValue={defaults?.name} required error={errors.name} />
+        <Field name="phone" label="Số điện thoại" type="tel" placeholder="Nhập số điện thoại" autoComplete="tel" inputMode="tel" defaultValue={defaults?.phone} required error={errors.phone} />
+        <Field name="email" label="Email" type="email" placeholder="Nhập email của bạn" autoComplete="email" defaultValue={defaults?.email} error={errors.email} />
         <div className="grid gap-x-2.5 md:grid-cols-2">
-          <Field name="province" label="Tỉnh/Thành phố" placeholder="Nhập tỉnh/thành phố" autoComplete="address-level1" required error={errors.province} />
-          <Field name="district" label="Quận/Huyện" placeholder="Nhập quận/huyện" autoComplete="address-level2" required error={errors.district} />
+          <Field name="province" label="Tỉnh/Thành phố" placeholder="Nhập tỉnh/thành phố" autoComplete="address-level1" defaultValue={defaults?.province} required error={errors.province} />
+          <Field name="district" label="Quận/Huyện" placeholder="Nhập quận/huyện" autoComplete="address-level2" defaultValue={defaults?.district} required error={errors.district} />
         </div>
-        <Field name="address" label="Địa chỉ cụ thể" placeholder="Số nhà, tên đường, phường/xã" autoComplete="street-address" required error={errors.address} />
+        <Field name="address" label="Địa chỉ cụ thể" placeholder="Số nhà, tên đường, phường/xã" autoComplete="street-address" defaultValue={defaults?.address} required error={errors.address} />
         <TextAreaField name="note" label="Ghi chú đơn hàng (tuỳ chọn)" placeholder="Ghi chú về đơn hàng, ví dụ: thời gian hay địa chỉ chi tiết hơn" />
 
         <label className="mt-5 flex items-center gap-2.5 text-[15px]">

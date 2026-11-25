@@ -55,6 +55,8 @@ export function validateCoupon(c: CouponRow): string | null {
   if (!(int(c.discount_value) && c.discount_value > 0)) return "Giá trị giảm phải là số nguyên > 0.";
   if (c.discount_type === "percent" && c.discount_value > 100) return "Giảm theo % tối đa 100.";
   if (!(int(c.min_order_vnd) && c.min_order_vnd >= 0)) return "Đơn tối thiểu phải ≥ 0.";
+  if (!(int(c.max_uses) && c.max_uses >= 0)) return "Số lượt dùng tối đa phải ≥ 0 (0 = không giới hạn).";
+  if (!(int(c.max_discount_vnd) && c.max_discount_vnd >= 0)) return "Mức giảm tối đa phải ≥ 0 (0 = không giới hạn).";
   if (c.starts_at && c.ends_at && c.starts_at > c.ends_at) return "Ngày bắt đầu phải trước ngày kết thúc.";
   return null;
 }

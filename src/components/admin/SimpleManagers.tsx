@@ -10,15 +10,16 @@ export function CouponsAdmin({ coupons }: { coupons: CouponRow[] }) {
   return (
     <ResourceManager<CouponRow>
       title="Voucher"
-      subtitle="Mã giảm giá. Khi đặt hàng, server phải kiểm tra điều kiện/hạn dùng (TODO ở bước thanh toán)."
+      subtitle="Mã giảm giá trên tiền hàng (không giảm phí giao). Server kiểm tra điều kiện, hạn dùng và số lượt khi khách đặt hàng; hủy đơn sẽ hoàn lại lượt dùng."
       noun="voucher"
       initial={coupons}
       searchText={(c) => c.code}
-      blank={() => ({ id: "", code: "", discount_type: "percent", discount_value: 10, min_order_vnd: 0, starts_at: "", ends_at: "", is_active: true })}
+      blank={() => ({ id: "", code: "", discount_type: "percent", discount_value: 10, min_order_vnd: 0, starts_at: "", ends_at: "", is_active: true, max_uses: 0, max_discount_vnd: 0, used_count: 0 })}
       columns={[
         { header: "Mã", render: (c) => <code className="font-bold">{c.code}</code> },
         { header: "Giảm", render: (c) => (c.discount_type === "percent" ? `${c.discount_value}%` : money(c.discount_value)) },
         { header: "Đơn tối thiểu", render: (c) => money(c.min_order_vnd) },
+        { header: "Đã dùng", render: (c) => (c.max_uses ? `${c.used_count}/${c.max_uses}` : String(c.used_count)) },
         { header: "Hiệu lực", render: (c) => `${c.starts_at ? c.starts_at.split("-").reverse().join("/") : "—"} → ${c.ends_at ? c.ends_at.split("-").reverse().join("/") : "—"}` },
         { header: "Bật", render: (c) => <Badge tone={c.is_active ? "green" : "gray"}>{c.is_active ? "Bật" : "Tắt"}</Badge> },
       ]}
@@ -27,6 +28,8 @@ export function CouponsAdmin({ coupons }: { coupons: CouponRow[] }) {
         { key: "discount_type", label: "Loại giảm", type: "select", options: [{ value: "percent", label: "Phần trăm (%)" }, { value: "fixed", label: "Số tiền (VND)" }] },
         { key: "discount_value", label: "Giá trị giảm", type: "number", min: 1 },
         { key: "min_order_vnd", label: "Đơn tối thiểu (VND)", type: "number", min: 0 },
+        { key: "max_discount_vnd", label: "Giảm tối đa (VND, chỉ cho loại %; 0 = không giới hạn)", type: "number", min: 0 },
+        { key: "max_uses", label: "Số lượt dùng tối đa (0 = không giới hạn)", type: "number", min: 0 },
         { key: "starts_at", label: "Bắt đầu", type: "date" },
         { key: "ends_at", label: "Kết thúc", type: "date" },
         { key: "is_active", label: "Đang bật", type: "toggle" },

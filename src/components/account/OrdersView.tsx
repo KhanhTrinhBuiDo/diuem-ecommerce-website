@@ -5,17 +5,18 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useCart } from "@/components/cart/CartProvider";
 import { OrderItemLine } from "@/components/account/OrderParts";
-import { mockOrders, orderStatusLabel, type Order, type OrderStatus } from "@/data/account";
+import { LoginRequired } from "@/components/account/LoginRequired";
+import { orderStatusLabel, type Order, type OrderStatus } from "@/data/account";
 import { siteConfig } from "@/config/site";
 import { formatVND } from "@/lib/format";
 
-type Tab = "all" | OrderStatus;
-const TABS: { key: Tab; label: string }[] = [
-  { key: "all", label: "Tất cả" },
-  { key: "shipping", label: "Vận chuyển" },
-  { key: "completed", label: "Hoàn thành" },
-  { key: "cancelled", label: "Đã hủy" },
-  { key: "returned", label: "Hoàn hàng" },
+type Tab = "all" | "active" | "completed" | "cancelled";
+/** "Vận chuyển" gom mọi đơn đang xử lý (chờ xác nhận, đã xác nhận, đang giao). TODO(returns): tab "Hoàn hàng" khi có trạng thái hoàn hàng (#34). */
+const TABS: { key: Tab; label: string; match: OrderStatus[] }[] = [
+  { key: "all", label: "Tất cả", match: [] },
+  { key: "active", label: "Vận chuyển", match: ["pending", "confirmed", "shipping"] },
+  { key: "completed", label: "Hoàn thành", match: ["completed"] },
+  { key: "cancelled", label: "Đã hủy", match: ["cancelled"] },
 ];
 
 function OrderCard({ order }: { order: Order }) {
@@ -23,8 +24,8 @@ function OrderCard({ order }: { order: Order }) {
   const router = useRouter();
   function rebuy() {
     for (const it of order.items) {
-      const [productId, variantId] = it.id.split(":");
-      cart.add({ productId, name: it.name, image: it.image, href: it.href, variantId, variants: [{ id: variantId, label: it.variant, price: it.price, available: true }] }, it.qty);
+      // Giá/tồn kho thật được đối chiếu lại khi mở trang giỏ hàng.
+      cart.add({ productId: it.id.split(":")[0], name: it.name, image: it.image, href: it.href, variantId: it.sku, variants: [{ id: it.sku, label: it.variant, price: it.price, available: true }] }, it.qty);
     }
     router.push("/gio-hang");
   }
@@ -64,10 +65,12 @@ function OrderCard({ order }: { order: Order }) {
   );
 }
 
-/** Figma "Lịch sử đơn hàng": 5 tab lọc + danh sách thẻ đơn. TODO(supabase): đọc bảng `orders` theo auth.uid(), phân trang. */
-export function OrdersView() {
+/** Figma "Lịch sử đơn hàng": tab lọc + danh sách thẻ đơn (đơn thật, đọc ở server theo tài khoản). TODO(pagination): hiện lấy tối đa 200 đơn gần nhất. */
+export function OrdersView({ orders, signedIn }: { orders: Order[]; signedIn: boolean }) {
   const [tab, setTab] = useState<Tab>("all");
-  const list = tab === "all" ? mockOrders : mockOrders.filter((o) => o.status === tab);
+  if (!signedIn) return <LoginRequired />;
+  const match = TABS.find((t) => t.key === tab)!.match;
+  const list = tab === "all" ? orders : orders.filter((o) => match.includes(o.status));
   return (
     <div>
       <div role="tablist" aria-label="Lọc đơn hàng" className="-mt-4 mb-6 flex flex-wrap justify-between gap-x-6 gap-y-2 px-1 sm:px-5">

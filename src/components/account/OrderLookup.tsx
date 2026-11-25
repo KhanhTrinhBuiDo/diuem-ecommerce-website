@@ -2,27 +2,37 @@
 
 import { useState } from "react";
 import { OrderPanel } from "@/components/account/OrderPanel";
-import { lookupOrder, type Order } from "@/data/account";
+import { lookupOrderAction } from "@/app/(site)/tra-cuu-don-hang/actions";
+import type { Order } from "@/data/account";
 
 /**
  * Tra cứu đơn cho khách chưa đăng nhập (Figma "Tra cứu đơn hàng").
- * Dữ liệu mẫu: thử mã 260609JM69BRCU + SĐT 0827745632.
- * TODO(supabase): chuyển thành server action; trả về tối thiểu thông tin; giới hạn số lần thử theo IP.
+ * Gọi server action → hàm SQL `lookup_order` (mã đơn + SĐT/email; khóa tạm khi thử sai nhiều lần).
+ * TODO(captcha): thêm captcha / giới hạn theo IP nếu bị dò mã.
  */
 export function OrderLookup() {
   const [code, setCode] = useState("");
   const [contact, setContact] = useState("");
   const [result, setResult] = useState<Order | null>(null);
   const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  function submit(e: React.FormEvent) {
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
+    if (busy) return;
     setResult(null);
     if (!code.trim() || !contact.trim()) return setError("Vui lòng nhập mã đơn hàng và số điện thoại/email đặt hàng.");
-    const o = lookupOrder(code, contact);
-    if (!o) return setError("Không tìm thấy đơn hàng. Vui lòng kiểm tra lại mã đơn và số điện thoại/email.");
-    setError("");
-    setResult(o);
+    setBusy(true);
+    try {
+      const r = await lookupOrderAction(code, contact);
+      if (!r.ok) return setError(r.message);
+      setError("");
+      setResult(r.order);
+    } catch {
+      setError("Không kết nối được máy chủ. Vui lòng thử lại.");
+    } finally {
+      setBusy(false);
+    }
   }
   function reset() {
     setCode("");
@@ -54,8 +64,8 @@ export function OrderLookup() {
           </p>
         )}
         <div className="flex flex-col justify-end gap-4 pt-6 sm:flex-row sm:gap-[30px]">
-          <button type="submit" className="h-[59px] rounded-full bg-black px-[100px] text-[clamp(16px,1.27vw,22px)] font-bold text-white max-sm:px-6">
-            Tra cứu
+          <button type="submit" disabled={busy} className="h-[59px] rounded-full bg-black px-[100px] text-[clamp(16px,1.27vw,22px)] font-bold text-white max-sm:px-6">
+            {busy ? "Đang tra cứu…" : "Tra cứu"}
           </button>
           <button type="button" onClick={reset} className="h-[59px] rounded-full bg-black px-[100px] text-[clamp(16px,1.27vw,22px)] font-bold text-white max-sm:px-6">
             Làm mới
