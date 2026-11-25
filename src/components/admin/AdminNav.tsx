@@ -12,6 +12,7 @@ export const adminNav = [
     items: [
       { label: "Đơn hàng", href: "/don-hang" },
       { label: "Sản phẩm", href: "/san-pham" },
+      { label: "Kho hàng", href: "/kho" },
       { label: "Danh mục", href: "/danh-muc" },
       { label: "Voucher", href: "/voucher" },
     ],

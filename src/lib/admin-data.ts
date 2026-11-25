@@ -69,6 +69,7 @@ export async function listCoupons(): Promise<CouponRow[]> {
   return (data ?? []).map((c) => ({
     id: c.code, code: c.code, discount_type: c.discount_type, discount_value: Number(c.discount_value), min_order_vnd: Number(c.min_order_vnd),
     starts_at: day(c.starts_at), ends_at: day(c.ends_at), is_active: c.is_active,
+    max_uses: Number(c.max_uses ?? 0), max_discount_vnd: Number(c.max_discount_vnd ?? 0), used_count: Number(c.used_count ?? 0),
   }));
 }
 
@@ -143,4 +144,33 @@ export async function getDashboard() {
     lowStock: (variants ?? []).map((v) => ({ sku: v.sku, stock: v.stock_qty, name: (v.products as unknown as { name: string }).name })),
     latest: (latest ?? []).map((o) => ({ id: o.id, code: o.order_number, name: o.contact_name, total: Number(o.total_vnd), status: o.status as OrderStatus })),
   };
+}
+
+export type StockRow = { sku: string; product: string; variant: string; stock: number; active: boolean };
+export type MovementRow = { id: number; at: string; sku: string; product: string; delta: number; reason: "order" | "cancel" | "adjust"; note: string; orderNumber: string };
+
+const sizeLabel = (label: string | null, v: unknown, u: unknown) => label || `${Number(v)} ${u}`;
+
+/** Mọi biến thể (kể cả ngừng bán) của sản phẩm chưa xóa, để nhập/điều chỉnh tồn. */
+export async function listStock(): Promise<StockRow[]> {
+  const sb = await createClient();
+  const { data, error } = await sb.from("products").select("name,status,product_variants(sku,label,size_value,size_unit,stock_qty,is_active)").is("deleted_at", null).order("name");
+  if (error) throw new Error(error.message);
+  return (data ?? []).flatMap((p) =>
+    ((p.product_variants as { sku: string; label: string | null; size_value: number; size_unit: string; stock_qty: number; is_active: boolean }[]) ?? [])
+      .sort((a, b) => a.sku.localeCompare(b.sku))
+      .map((v) => ({ sku: v.sku, product: p.name, variant: sizeLabel(v.label, v.size_value, v.size_unit), stock: v.stock_qty, active: v.is_active && p.status === "active" })),
+  );
+}
+
+/** 300 biến động kho gần nhất (đặt hàng, hủy đơn, điều chỉnh). */
+export async function listStockMovements(): Promise<MovementRow[]> {
+  const sb = await createClient();
+  const { data, error } = await sb.from("stock_movements").select("id,delta,reason,note,created_at,product_variants(sku,products(name)),orders(order_number)").order("id", { ascending: false }).limit(300);
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((m) => {
+    const v = m.product_variants as unknown as { sku: string; products: { name: string } | null } | null;
+    const o = m.orders as unknown as { order_number: string } | null;
+    return { id: Number(m.id), at: String(m.created_at), sku: v?.sku ?? "—", product: v?.products?.name ?? "—", delta: m.delta, reason: m.reason, note: m.note ?? "", orderNumber: o?.order_number ?? "" };
+  });
 }

@@ -40,7 +40,8 @@ export async function saveProduct(input: ProductInput): Promise<ActionResult<{ i
   const row = {
     category_id: input.category_id, slug: input.slug.trim(), name: input.name.trim(), kind: input.kind, status: input.status, is_featured: input.is_featured, is_new: input.is_new,
     hero_material: nz(input.hero_material), short_description: nz(input.short_description), usage_instructions: nz(input.usage_instructions),
-    storage_instructions: nz(input.storage_instructions), warnings: nz(input.warnings), shelf_life_months: input.shelf_life_months, pao_months: input.pao_months,
+    storage_instructions: nz(input.storage_instructions), warnings: nz(input.warnings),
+    ingredients: nz(input.ingredients ?? ""), suitable_for: nz(input.suitable_for ?? ""), region: nz(input.region ?? ""), product_line: nz(input.product_line ?? ""), shelf_life_months: input.shelf_life_months, pao_months: input.pao_months,
   };
 
   let id = input.id;
@@ -111,6 +112,21 @@ export async function updateOrder(id: string, patch: { status?: OrderStatus; car
   return error ? fail(dbError(error)) : { ok: true };
 }
 
+/* ───────── Kho ───────── */
+/** Đặt tồn mới cho nhiều SKU một lần (hàm SQL `adjust_stock`: kiểm quyền admin, khóa dòng, ghi nhật ký; lỗi một dòng → hủy cả lần). */
+export async function adjustStock(changes: { sku: string; qty: number }[], note: string): Promise<ActionResult<{ changed: number }>> {
+  await requireAdmin();
+  if (!Array.isArray(changes) || changes.length === 0) return fail("Chưa có thay đổi nào.");
+  if (changes.length > 500) return fail("Tối đa 500 dòng mỗi lần.");
+  const clean = changes.map((c) => ({ sku: String(c.sku ?? ""), qty: Number(c.qty) }));
+  if (clean.some((c) => !c.sku || !Number.isInteger(c.qty) || c.qty < 0 || c.qty > 999999)) return fail("Tồn kho phải là số nguyên từ 0 đến 999999.");
+  const sb = await createClient();
+  const { data, error } = await sb.rpc("adjust_stock", { p_changes: clean, p_note: String(note ?? "").slice(0, 300) });
+  if (error) return fail(error.code === "P0001" ? error.message : dbError(error));
+  bust();
+  return { ok: true, changed: Number((data as { changed: number }).changed) };
+}
+
 /* ───────── Voucher ───────── */
 export async function saveCoupon(c: CouponRow, isNew: boolean): Promise<ActionResult> {
   await requireAdmin();
@@ -118,7 +134,8 @@ export async function saveCoupon(c: CouponRow, isNew: boolean): Promise<ActionRe
   const err = validateCoupon({ ...c, code });
   if (err) return fail(err);
   const sb = await createClient();
-  const row = { discount_type: c.discount_type, discount_value: c.discount_value, min_order_vnd: c.min_order_vnd, starts_at: c.starts_at || null, ends_at: c.ends_at ? `${c.ends_at}T23:59:59+07:00` : null, is_active: c.is_active };
+  const row = { discount_type: c.discount_type, discount_value: c.discount_value, min_order_vnd: c.min_order_vnd, starts_at: c.starts_at || null, ends_at: c.ends_at ? `${c.ends_at}T23:59:59+07:00` : null, is_active: c.is_active,
+    max_uses: c.max_uses > 0 ? c.max_uses : null, max_discount_vnd: c.max_discount_vnd > 0 ? c.max_discount_vnd : null };
   const { error } = isNew ? await sb.from("coupons").insert({ code, ...row }) : await sb.from("coupons").update(row).eq("code", c.id);
   return error ? fail(dbError(error)) : { ok: true };
 }
