@@ -1,16 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ImageOrPlaceholder } from "@/components/ui/ImageOrPlaceholder";
 
-type Props = { images: (string | null)[]; name: string };
+type Props = { images: (string | null)[]; name: string; /** Ảnh của size đang chọn: đổi size → gallery nhảy tới ảnh này */ focus?: string | null };
 
 /**
  * Gallery (Figma Item-Window-view): cột ảnh nhỏ 65×98 bên trái, ảnh lớn 650×975,
  * hai nút tròn ← → mờ ở góc dưới phải ảnh lớn.
  */
-export function ProductGallery({ images, name }: Props) {
+export function ProductGallery({ images, name, focus }: Props) {
   const [i, setI] = useState(0);
+  useEffect(() => {
+    if (!focus) return;
+    const k = images.indexOf(focus);
+    if (k >= 0) setI(k);
+  }, [focus, images]);
   const n = images.length;
   const go = (d: number) => setI((v) => (v + d + n) % n);
 

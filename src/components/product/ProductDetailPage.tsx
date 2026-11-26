@@ -3,24 +3,22 @@ import { ActivitySection } from "@/components/home/ActivitySection";
 import { BrandStory } from "@/components/home/BrandStory";
 import { ProductCard, type Product } from "@/components/home/ProductCard";
 import { ProductDescription } from "@/components/product/ProductDescription";
-import { ProductGallery } from "@/components/product/ProductGallery";
-import { ProductInfo } from "@/components/product/ProductInfo";
+import { ProductHero } from "@/components/product/ProductHero";
 import { ProductReviews } from "@/components/product/ProductReviews";
 import { PinkBar } from "@/components/ui/PinkBar";
 import type { Collection } from "@/data/catalog";
 import { activities, activitySectionTitle, brandStory } from "@/data/home";
 import type { ProductDetail } from "@/data/products";
-import { reviews } from "@/data/reviews";
+import type { Review } from "@/data/reviews";
 
-type Props = { product: ProductDetail; collection: Collection; href: string; suggestions: Product[]; related: Product[] };
+type Props = { product: ProductDetail; collection: Collection; href: string; suggestions: Product[]; related: Product[]; reviews: Review[]; average: number };
 
 /**
  * Trang chi tiết sản phẩm (Figma "Product - Details"):
  * Breadcrumb → [Gallery | Thông tin] → dải hồng → Mô tả → dải hồng → "Có thể bạn cũng thích"
  * → dải hồng → Đánh giá → Cùng Dịu Em đồng hành → Câu chuyện thương hiệu.
  */
-export function ProductDetailPage({ product, collection, href, suggestions, related }: Props) {
-  const average = reviews.length ? Math.round((reviews.reduce((s, r) => s + r.rating, 0) / reviews.length) * 10) / 10 : 0;
+export function ProductDetailPage({ product, collection, href, suggestions, related, reviews, average }: Props) {
   return (
     <>
       <Breadcrumb
@@ -32,8 +30,7 @@ export function ProductDetailPage({ product, collection, href, suggestions, rela
         ]}
       />
       <div className="mx-auto grid w-full max-w-[1728px] lg:grid-cols-2">
-        <ProductGallery images={product.images} name={product.name} />
-        <ProductInfo product={product} href={href} rating={average} suggestions={suggestions} />
+        <ProductHero product={product} href={href} rating={average} suggestions={suggestions} />
       </div>
 
       <PinkBar />

@@ -11,14 +11,17 @@ import { RatingStars } from "@/components/ui/RatingStars";
 import { Stepper } from "@/components/ui/Stepper";
 import { siteConfig } from "@/config/site";
 import { formatVND } from "@/lib/format";
-import { defaultVariant, type ProductDetail } from "@/data/products";
+import type { ProductDetail } from "@/data/products";
 
-type Props = { product: ProductDetail; href: string; rating: number; suggestions: Product[] };
+type Props = { product: ProductDetail; href: string; rating: number; suggestions: Product[]; variantId: string; onVariant: (id: string) => void };
+
+/** Nút chọn size: hết hàng = xám + cấm chọn; còn hàng = viền đen chữ đen; đang chọn = nền đen chữ trắng. */
+const sizeCls = (available: boolean, active: boolean) =>
+  !available ? "cursor-not-allowed border-[#cfcfcf] bg-[#ececec] text-[#9b9b9b]" : active ? "border-black bg-black text-white" : "border-black bg-white text-black hover:bg-black/5";
 
 /** Cột thông tin bên phải (Figma "Details Information"). */
-export function ProductInfo({ product, href, rating, suggestions }: Props) {
+export function ProductInfo({ product, href, rating, suggestions, variantId, onVariant: setVariantId }: Props) {
   const cart = useCart();
-  const [variantId, setVariantId] = useState(defaultVariant(product).id);
   const [qty, setQty] = useState(1);
   const variant = product.variants.find((v) => v.id === variantId)!;
   const addRef = useRef<HTMLButtonElement>(null);
@@ -34,7 +37,7 @@ export function ProductInfo({ product, href, rating, suggestions }: Props) {
   }, []);
 
   function addToCart() {
-    cart.add({ productId: product.slug, name: product.name, image: product.images[0], href, variants: product.variants, variantId }, qty);
+    cart.add({ productId: product.slug, name: product.name, image: variant.images?.[0] ?? product.images[0], href, variants: product.variants, variantId }, qty);
   }
 
   async function share() {
@@ -99,9 +102,7 @@ export function ProductInfo({ product, href, rating, suggestions }: Props) {
                   aria-checked={active}
                   disabled={!v.available}
                   onClick={() => setVariantId(v.id)}
-                  className={`h-[33px] min-w-[132px] rounded-full border-2 px-5 text-lg font-bold transition-colors ${
-                    !v.available ? "cursor-not-allowed border-[#5a5a5a] bg-rule text-[#5a5a5a]" : active ? "border-black bg-white text-black" : "border-black/40 bg-white text-black/60 hover:border-black"
-                  }`}
+                  className={`h-[33px] min-w-[132px] rounded-full border-2 px-5 text-lg font-bold transition-colors ${sizeCls(v.available, active)}`}
                 >
                   {v.label}
                 </button>
@@ -233,9 +234,7 @@ function FollowBar({
                     aria-checked={active}
                     disabled={!v.available}
                     onClick={() => onVariant(v.id)}
-                    className={`h-[33px] min-w-[100px] rounded-full border-2 px-4 text-[clamp(14px,1.04vw,18px)] font-bold ${
-                      !v.available ? "cursor-not-allowed border-[#5a5a5a] bg-rule text-[#5a5a5a]" : active ? "border-black bg-white" : "border-black/40 bg-white text-black/60 hover:border-black"
-                    }`}
+                    className={`h-[33px] min-w-[100px] rounded-full border-2 px-4 text-[clamp(14px,1.04vw,18px)] font-bold ${sizeCls(v.available, active)}`}
                   >
                     {v.label}
                   </button>
