@@ -81,8 +81,8 @@ export function ProductsAdmin({ products, categories }: { products: ProductRow[]
             <BulkImages products={products} />
             <ImportProducts />
             <button type="button" className={btn.primary} onClick={() => { setError(""); setSlugTouched(false); setEdit(blank(leafCats[0]?.id ?? "")); }}>
-              + Thêm sản phẩm
-            </button>
+            + Thêm sản phẩm
+          </button>
           </>
         }
       />
@@ -155,11 +155,15 @@ export function ProductsAdmin({ products, categories }: { products: ProductRow[]
                   {(Object.keys(productStatusText) as ProductStatus[]).map((s) => <option key={s} value={s}>{productStatusText[s]}</option>)}
                 </select>
               </Field>
+              <Field label="Dòng sản phẩm (dùng cho bộ lọc, vd Hair care - Cho Em)"><input className={inputCls} value={edit.product_line ?? ""} onChange={(e) => set("product_line", e.target.value)} /></Field>
+              <Field label="Vùng nguyên liệu"><input className={inputCls} value={edit.region ?? ""} onChange={(e) => set("region", e.target.value)} /></Field>
               <Field label="Nguyên liệu chủ đạo"><input className={inputCls} value={edit.hero_material} onChange={(e) => set("hero_material", e.target.value)} /></Field>
               <div className="flex items-center justify-between gap-3 text-sm"><span className="font-medium">Sản phẩm nổi bật</span><Toggle checked={edit.is_featured} onChange={(v) => set("is_featured", v)} label="Nổi bật" /></div>
               <div className="flex items-center justify-between gap-3 text-sm"><span className="font-medium">Gắn nhãn &quot;Sản phẩm mới&quot; (hiện ở NEW ARRIVALS)</span><Toggle checked={edit.is_new} onChange={(v) => set("is_new", v)} label="Sản phẩm mới" /></div>
               <div className="sm:col-span-2"><Field label="Mô tả ngắn"><textarea rows={3} className={`${inputCls} h-auto py-3`} value={edit.short_description} onChange={(e) => set("short_description", e.target.value)} /></Field></div>
               <div className="sm:col-span-2"><Field label="Hướng dẫn sử dụng"><textarea rows={2} className={`${inputCls} h-auto py-3`} value={edit.usage_instructions} onChange={(e) => set("usage_instructions", e.target.value)} /></Field></div>
+              <div className="sm:col-span-2"><Field label="Thành phần"><textarea rows={3} className={`${inputCls} h-auto py-3`} value={edit.ingredients ?? ""} onChange={(e) => set("ingredients", e.target.value)} /></Field></div>
+              <div className="sm:col-span-2"><Field label="Phù hợp với (cũng dùng để gắn thẻ lọc: mẹ bầu, sau sinh, bé, da khô, tóc rụng…)"><textarea rows={2} className={`${inputCls} h-auto py-3`} value={edit.suitable_for ?? ""} onChange={(e) => set("suitable_for", e.target.value)} /></Field></div>
               <Field label="Bảo quản"><textarea rows={2} className={`${inputCls} h-auto py-3`} value={edit.storage_instructions} onChange={(e) => set("storage_instructions", e.target.value)} /></Field>
               <Field label="Lưu ý"><textarea rows={2} className={`${inputCls} h-auto py-3`} value={edit.warnings} onChange={(e) => set("warnings", e.target.value)} /></Field>
               <Field label="Hạn sử dụng (tháng)"><input type="number" min={1} className={inputCls} value={edit.shelf_life_months ?? ""} onChange={(e) => set("shelf_life_months", e.target.value === "" ? null : Number(e.target.value))} /></Field>
@@ -170,12 +174,17 @@ export function ProductsAdmin({ products, categories }: { products: ProductRow[]
               <legend className="px-2 text-sm font-bold">Phiên bản (dung tích / giá / tồn kho)</legend>
               <div className="flex flex-col gap-4">
                 {edit.variants.map((v, i) => (
-                  <div key={i} className="grid items-end gap-3 sm:grid-cols-[1.3fr_0.8fr_0.7fr_1fr_0.8fr_auto]">
+                  <div key={i} className="grid items-end gap-3 sm:grid-cols-[1.3fr_1.2fr_0.8fr_0.7fr_1fr_0.8fr_auto_auto]">
                     <Field label="SKU"><input required className={inputCls} value={v.sku} onChange={(e) => setVariant(i, { sku: e.target.value })} /></Field>
+                    <Field label="Nhãn hiển thị"><input className={inputCls} placeholder="vd 450 ml, Túi refill 450 ml" value={v.label ?? ""} onChange={(e) => setVariant(i, { label: e.target.value })} /></Field>
                     <Field label="Dung tích"><input type="number" min={0.01} step="any" className={inputCls} value={Number.isNaN(v.size_value) ? "" : v.size_value} onChange={(e) => setVariant(i, { size_value: num(e.target.value) })} /></Field>
                     <Field label="Đơn vị"><select className={inputCls} value={v.size_unit} onChange={(e) => setVariant(i, { size_unit: e.target.value as VariantRow["size_unit"] })}>{sizeUnits.map((u) => <option key={u}>{u}</option>)}</select></Field>
                     <Field label="Giá (VND)"><input type="number" min={0} className={inputCls} value={Number.isNaN(v.price_vnd) ? "" : v.price_vnd} onChange={(e) => setVariant(i, { price_vnd: num(e.target.value) })} /></Field>
                     <Field label="Tồn kho"><input type="number" min={0} className={inputCls} value={Number.isNaN(v.stock_qty) ? "" : v.stock_qty} onChange={(e) => setVariant(i, { stock_qty: num(e.target.value) })} /></Field>
+                    <label className="flex items-center gap-1.5 pb-2 text-xs font-medium">
+                      <input type="radio" name="variant-default" checked={Boolean(v.is_default)} onChange={() => set("variants", edit.variants.map((x, j) => ({ ...x, is_default: j === i })))} className="size-4 accent-black" />
+                      Chính
+                    </label>
                     <div className="flex items-center gap-2 pb-2">
                       <Toggle checked={v.is_active} onChange={(x) => setVariant(i, { is_active: x })} label={`Bật phiên bản ${v.sku}`} />
                       {edit.variants.length > 1 && !v.id && <button type="button" aria-label="Xóa dòng" className="text-lg leading-none text-red-600" onClick={() => set("variants", edit.variants.filter((_, j) => j !== i))}>×</button>}

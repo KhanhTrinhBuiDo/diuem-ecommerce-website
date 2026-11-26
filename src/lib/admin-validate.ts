@@ -31,6 +31,8 @@ export function validateProduct(p: ProductInput): string | null {
   if (!isSlug(p.slug)) return "Slug chỉ gồm chữ thường, số và dấu gạch ngang.";
   if (!p.category_id) return "Hãy chọn danh mục.";
   if (!["draft", "active", "discontinued"].includes(p.status)) return "Trạng thái không hợp lệ.";
+  if ((p.ingredients ?? "").length > 3000 || (p.suitable_for ?? "").length > 1000 || (p.region ?? "").length > 200 || (p.product_line ?? "").length > 120) return "Một ô thông tin sản phẩm quá dài.";
+  if (p.variants.filter((v) => v.is_default && v.is_active).length > 1) return "Chỉ được chọn một phiên bản chính (mặc định).";
   if (p.shelf_life_months !== null && !(int(p.shelf_life_months) && p.shelf_life_months > 0)) return "Hạn sử dụng (tháng) phải là số nguyên dương.";
   if (p.pao_months !== null && !(int(p.pao_months) && p.pao_months > 0)) return "Dùng trong (tháng sau mở nắp) phải là số nguyên dương.";
   if (p.variants.length === 0) return "Cần ít nhất một phiên bản (dung tích/giá).";

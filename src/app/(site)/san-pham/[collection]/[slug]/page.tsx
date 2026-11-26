@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ProductDetailPage } from "@/components/product/ProductDetailPage";
+import { getProductReviews } from "@/lib/reviews";
 import { getCatalog, hrefOf, related, resolveCollection, toCard, toDetail, topCategory } from "@/lib/storefront";
 
 export const revalidate = 60;
@@ -21,5 +22,6 @@ export default async function ProductPage({ params }: { params: Promise<Params> 
   // Breadcrumb luôn theo danh mục cha thật của sản phẩm (URL cũ/sai danh mục vẫn mở được)
   const collection = resolveCollection(cat, topCategory(p).slug)!.collection;
   const near = related(cat.products, p, 4).map(toCard);
-  return <ProductDetailPage product={toDetail(p)} collection={collection} href={hrefOf(p)} suggestions={near.slice(0, 3)} related={near} />;
+  const { reviews, average } = await getProductReviews(p.id);
+  return <ProductDetailPage product={toDetail(p)} collection={collection} href={hrefOf(p)} suggestions={near.slice(0, 3)} related={near} reviews={reviews} average={average} />;
 }

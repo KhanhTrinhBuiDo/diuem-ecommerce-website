@@ -24,7 +24,9 @@ async function skuIndex() {
   return m;
 }
 
-function build(o: Row, items: Row[], idx: Awaited<ReturnType<typeof skuIndex>>): Order {
+type MyRev = Map<string, { rating: number; content: string; canEdit: boolean }>;
+
+function build(o: Row, items: Row[], idx: Awaited<ReturnType<typeof skuIndex>>, revs?: MyRev): Order {
   const status = String(o.status) as OrderStatus;
   const cancelled = status === "cancelled";
   const steps: OrderStep[] = [
@@ -43,7 +45,8 @@ function build(o: Row, items: Row[], idx: Awaited<ReturnType<typeof skuIndex>>):
       name: cut > 0 ? full.slice(0, cut) : full,
       variant: cut > 0 ? full.slice(cut + 3) : "",
       qty: Number(i.quantity), price: Number(i.unit_price_vnd),
-      image: hit?.image ?? null, href: hit?.href ?? "/san-pham", reviewed: false,
+      image: hit?.image ?? null, href: hit?.href ?? "/san-pham",
+      itemId: i.id ? String(i.id) : undefined, review: i.id ? revs?.get(String(i.id)) : undefined,
     };
   });
   return {
@@ -58,7 +61,7 @@ function build(o: Row, items: Row[], idx: Awaited<ReturnType<typeof skuIndex>>):
   };
 }
 
-const ORDER_COLS = "id,order_number,status,placed_at,confirmed_at,shipped_at,completed_at,cancelled_at,subtotal_vnd,discount_vnd,shipping_fee_vnd,total_vnd,ship_name,ship_phone,ship_street,ship_ward,ship_province,carrier,tracking_code,payment_method,order_items(sku,product_name,unit_price_vnd,quantity)";
+const ORDER_COLS = "id,order_number,status,placed_at,confirmed_at,shipped_at,completed_at,cancelled_at,subtotal_vnd,discount_vnd,shipping_fee_vnd,total_vnd,ship_name,ship_phone,ship_street,ship_ward,ship_province,carrier,tracking_code,payment_method,order_items(id,sku,product_name,unit_price_vnd,quantity)";
 
 /** Đơn của tài khoản đang đăng nhập. Phải lọc theo customer_id: tài khoản admin đọc được MỌI đơn qua RLS. */
 export async function listMyOrders(): Promise<{ signedIn: boolean; orders: Order[] }> {
@@ -71,7 +74,9 @@ export async function listMyOrders(): Promise<{ signedIn: boolean; orders: Order
     const { data, error } = await sb.from("orders").select(ORDER_COLS).eq("customer_id", me).order("placed_at", { ascending: false }).limit(200);
     if (error) throw new Error(error.message);
     const idx = await skuIndex();
-    return { signedIn: true, orders: (data ?? []).map((o) => build(o as Row, ((o as Row).order_items as Row[]) ?? [], idx)) };
+    const { data: rv } = await sb.from("reviews").select("order_item_id,rating,content,edit_count").eq("customer_id", me).limit(1000);
+    const revs: MyRev = new Map((rv ?? []).map((r) => [String(r.order_item_id), { rating: Number(r.rating), content: String(r.content ?? ""), canEdit: Number(r.edit_count) < 1 }]));
+    return { signedIn: true, orders: (data ?? []).map((o) => build(o as Row, ((o as Row).order_items as Row[]) ?? [], idx, revs)) };
   } catch (e) {
     console.error("[orders] listMyOrders:", e);
     return { signedIn: false, orders: [] };

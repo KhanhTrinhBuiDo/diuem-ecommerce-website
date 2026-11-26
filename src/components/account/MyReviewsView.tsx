@@ -1,6 +1,8 @@
 import Link from "next/link";
+import { LoginRequired } from "@/components/account/LoginRequired";
 import { ImageOrPlaceholder } from "@/components/ui/ImageOrPlaceholder";
-import { mockMyReviews, type MyReview } from "@/data/account";
+import { ratingLabel } from "@/data/reviews";
+import type { MyReview } from "@/lib/reviews";
 
 function Stars({ n }: { n: number }) {
   return (
@@ -17,36 +19,26 @@ function Stars({ n }: { n: number }) {
 function ReviewCard({ r }: { r: MyReview }) {
   return (
     <article className="flex border border-black">
-      <div className="flex-none px-2.5 py-5 sm:w-[118px] sm:pl-0 sm:text-right">
-        <ImageOrPlaceholder src={null} alt="" label="" className="ml-auto size-10 rounded-full sm:size-14" />
-      </div>
-      <div className="min-w-0 flex-1 py-5 pr-4 sm:pr-[30px]">
+      <div className="min-w-0 flex-1 px-4 py-5 sm:px-[30px]">
         <div className="flex flex-col gap-[5px] px-[5px] text-[12px] font-light">
-          <p>{r.author}</p>
           <Stars n={r.rating} />
           <p>
-            {r.date} | Sản phẩm: {r.product} | Phân loại hàng: {r.variant}
+            {r.date} | Sản phẩm: {r.productName}{r.variant ? ` | Phân loại hàng: ${r.variant}` : ""}
           </p>
         </div>
         <p className="px-[5px] py-2.5 text-[12px] font-light">
-          Chất lượng sản phẩm: <strong className="font-bold">{r.quality}</strong>
+          Chất lượng sản phẩm: <strong className="font-bold">{ratingLabel(r.rating)}</strong>
         </p>
-        <p className="px-[5px] py-2.5 text-[12px] font-light leading-[15px] sm:pr-[100px]">{r.content}</p>
-        <div className="flex gap-[15px] px-[5px] py-2.5">
-          {r.images.map((src, i) => (
-            <ImageOrPlaceholder key={i} src={src} alt="Ảnh đánh giá" label="Ảnh" sizes="100px" className="size-20 sm:size-[100px]" />
-          ))}
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-3 pl-[5px]">
-          <span className="flex items-center gap-3 px-2.5 text-[12px] font-light">
-            <svg width="15" height="14" viewBox="0 0 24 22" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M7 10v11H3V10zM7 10l4-8c2 0 3 1.5 3 3v4h6l-2 9a2 2 0 01-2 2H7" /></svg>
-            {r.likes}
-          </span>
+        {r.content && <p className="whitespace-pre-line break-words px-[5px] py-2.5 text-[12px] font-light leading-[15px]">{r.content}</p>}
+        <div className="flex flex-wrap items-center justify-between gap-3 pl-[5px] pt-2.5">
+          <span className="text-[12px] font-light text-black/50">{r.canRedo ? "Bạn có thể sửa đánh giá này 1 lần" : "Đã sửa 1 lần"}</span>
           <div className="flex gap-2.5">
-            {/* TODO(reviews): "Đánh giá lại" mở ReviewModal ở chế độ sửa; Figma làm mờ ở thẻ đầu (đã sửa 1 lần). */}
-            <button type="button" disabled={!r.canRedo} className="h-[42px] rounded-[5px] border-2 border-black/30 px-5 text-[clamp(13px,1.04vw,18px)] font-light text-black/30 enabled:border-black enabled:text-black disabled:cursor-not-allowed">
-              Đánh giá lại
-            </button>
+            {/* Sửa đánh giá: mở từ chi tiết đơn hàng (nút "Đánh giá") */}
+            {r.canRedo && (
+              <Link href="/tai-khoan/lich-su-mua-hang" className="grid h-[42px] place-items-center rounded-[5px] border-2 border-black px-5 text-[clamp(13px,1.04vw,18px)] font-light">
+                Đánh giá lại
+              </Link>
+            )}
             <Link href={r.href} className="grid h-[42px] place-items-center rounded-[5px] border-2 border-black px-5 text-[clamp(13px,1.04vw,18px)] font-light">
               Xem trực tiếp
             </Link>
@@ -59,10 +51,10 @@ function ReviewCard({ r }: { r: MyReview }) {
 
 /**
  * Hai trạng thái (Figma): có đánh giá → danh sách thẻ; chưa có / chưa đăng nhập → câu thông báo + banner "Khám phá".
- * TODO(auth): chưa đăng nhập nên chuyển hướng/hiện popup đăng nhập thay vì trang trống.
  */
-export function MyReviewsView({ empty }: { empty: boolean }) {
-  if (empty) {
+export function MyReviewsView({ reviews, signedIn }: { reviews: MyReview[]; signedIn: boolean }) {
+  if (!signedIn) return <LoginRequired what="đánh giá của bạn" />;
+  if (reviews.length === 0) {
     return (
       <div className="flex flex-col gap-[25px]">
         <p className="text-[clamp(14px,1.04vw,18px)]">Bạn chưa có bất kỳ đánh giá nào...</p>
@@ -79,7 +71,7 @@ export function MyReviewsView({ empty }: { empty: boolean }) {
   }
   return (
     <ul className="flex flex-col gap-6">
-      {mockMyReviews.map((r) => (
+      {reviews.map((r) => (
         <li key={r.id}>
           <ReviewCard r={r} />
         </li>

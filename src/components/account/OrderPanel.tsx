@@ -76,10 +76,11 @@ export function OrderPanel({ order, back }: { order: Order; back: { label: strin
               : order.status === "cancelled" ? "Đơn hàng đã được hủy." : "Đơn hàng đang được xử lý. Bạn có thể theo dõi tình trạng ngay tại đây."}
           </p>
           <div className="flex w-full flex-col gap-[13px] md:w-[267px] md:flex-none">
-            {/* TODO(reviews): chỉ cho đánh giá khi đơn đã hoàn thành & chưa quá hạn đánh giá (chốt chính sách ở câu hỏi mở 18). */}
+            {/* TODO(reviews-policy): hạn được đánh giá sau khi nhận hàng (câu hỏi mở 18) – hiện không giới hạn. Cần đăng nhập đúng tài khoản đặt đơn. */}
             <button
               type="button"
-              disabled={!completed}
+              disabled={!completed || !order.items.some((i) => i.itemId)}
+              title={completed && !order.items.some((i) => i.itemId) ? "Đăng nhập để đánh giá" : undefined}
               onClick={() => setReviewOpen(true)}
               className="h-[42px] rounded-[5px] border-2 border-black bg-line text-[clamp(14px,1.04vw,18px)] font-bold text-white [text-shadow:0_4px_10px_rgba(0,0,0,0.5)] disabled:cursor-not-allowed disabled:opacity-40"
             >
@@ -142,7 +143,7 @@ export function OrderPanel({ order, back }: { order: Order; back: { label: strin
         </dl>
       </div>
       <div aria-hidden="true" className="mt-10 h-[10px] w-full bg-line" />
-      <ReviewModal open={reviewOpen} onClose={() => setReviewOpen(false)} items={order.items} onDone={() => setNote("Cảm ơn bạn! Đánh giá chỉ là bản mô phỏng, chưa lưu vào hệ thống.")} />
+      <ReviewModal open={reviewOpen} onClose={() => setReviewOpen(false)} items={order.items} onDone={() => { setNote("Cảm ơn bạn đã đánh giá sản phẩm!"); router.refresh(); }} />
       <span className="sr-only">{orderStatusLabel[order.status]}</span>
     </div>
   );

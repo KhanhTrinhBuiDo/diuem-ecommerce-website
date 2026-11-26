@@ -26,7 +26,7 @@ export type ProductRow = {
   usage_instructions: string;
   storage_instructions: string;
   warnings: string;
-  /** Thông tin nạp từ CSV (chỉ đọc trong form; chưa có ô sửa — TODO(admin-form)) */
+  /** Thông tin nạp từ CSV; sửa được trong form sản phẩm */
   ingredients?: string; suitable_for?: string; region?: string; product_line?: string;
   shelf_life_months: number | null;
   pao_months: number | null;

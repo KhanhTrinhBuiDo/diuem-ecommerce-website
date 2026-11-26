@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath, revalidateTag } from "next/cache";
 import type { Address, Profile } from "@/data/account";
 import { getAccount } from "@/lib/account";
 import { createClient } from "@/lib/supabase/server";
@@ -58,4 +59,18 @@ export async function getCheckoutDefaults(): Promise<{ name: string; phone: stri
   if (!a.signedIn) return null;
   const d = a.addresses.find((x) => x.isDefault) ?? a.addresses[0] ?? null;
   return { name: a.profile.name, phone: a.profile.phone, email: a.profile.email, address: d };
+}
+
+/** Gửi / sửa đánh giá cho một dòng của đơn đã hoàn thành (hàm SQL `submit_review` kiểm tra chủ đơn, trạng thái, sửa tối đa 1 lần). */
+export async function submitReview(itemId: string, rating: number, content: string): Promise<Result> {
+  if (!isSupabaseConfigured()) return NOT_READY;
+  if (!/^[0-9a-f-]{36}$/i.test(String(itemId))) return fail("Sản phẩm không hợp lệ.");
+  const sb = await createClient();
+  const { data, error } = await sb.rpc("submit_review", { p_item: itemId, p_rating: Math.trunc(Number(rating)), p_content: String(content ?? "").slice(0, 1100) });
+  if (error) { console.error("[reviews] submit:", error); return fail("Không gửi được đánh giá. Vui lòng thử lại."); }
+  const r = data as { ok: boolean; message?: string };
+  if (!r?.ok) return fail(r?.message ?? "Không gửi được đánh giá.");
+  revalidateTag("reviews");
+  revalidatePath("/tai-khoan/danh-gia");
+  return { ok: true };
 }

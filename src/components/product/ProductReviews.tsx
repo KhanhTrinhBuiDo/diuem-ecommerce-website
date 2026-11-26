@@ -2,12 +2,11 @@
 
 import { useMemo, useState } from "react";
 import { ArrowRight } from "@/components/ui/ArrowRight";
-import { FlagIcon, ThumbIcon } from "@/components/ui/icons2";
 import { ImageOrPlaceholder } from "@/components/ui/ImageOrPlaceholder";
 import { RatingStars } from "@/components/ui/RatingStars";
-import type { Review } from "@/data/reviews";
+import { ratingLabel, type Review } from "@/data/reviews";
 
-type Filter = "all" | "text" | "media" | 1 | 2 | 3 | 4 | 5;
+type Filter = "all" | "text" | 1 | 2 | 3 | 4 | 5;
 const PAGE = 3;
 
 /** Định dạng bằng cắt chuỗi (không dùng múi giờ) để server và trình duyệt luôn ra cùng kết quả. */
@@ -20,17 +19,17 @@ export function ProductReviews({ reviews, average }: { reviews: Review[]; averag
 
   const counts = useMemo(() => {
     const byStar = (s: number) => reviews.filter((r) => r.rating === s).length;
-    return { star: [5, 4, 3, 2, 1].map((s) => [s, byStar(s)] as const), text: reviews.filter((r) => r.content).length, media: reviews.filter((r) => r.images.length).length };
+    return { star: [5, 4, 3, 2, 1].map((s) => [s, byStar(s)] as const), text: reviews.filter((r) => r.content).length };
   }, [reviews]);
 
-  const list = reviews.filter((r) => (filter === "all" ? true : filter === "text" ? !!r.content : filter === "media" ? r.images.length > 0 : r.rating === filter));
+  const list = reviews.filter((r) => (filter === "all" ? true : filter === "text" ? !!r.content : r.rating === filter));
   const shown = list.slice(0, visible);
 
   const chips: { id: Filter; label: string }[] = [
     { id: "all", label: "Tất cả bình luận" },
     ...counts.star.map(([s, n]) => ({ id: s as Filter, label: `${s} Sao (${n})` })),
     { id: "text", label: `Có Bình luận (${counts.text})` },
-    { id: "media", label: `Có Hình ảnh / Video (${counts.media})` },
+    // TODO(media): bộ lọc "Có Hình ảnh / Video" khi đánh giá hỗ trợ đính kèm ảnh/video
   ];
 
   return (
@@ -67,35 +66,20 @@ export function ProductReviews({ reviews, average }: { reviews: Review[]; averag
           <li key={r.id} className="rounded-[10px] bg-[#ededed] px-5 py-6 lg:px-[75px]">
             <article className="flex flex-col gap-2 text-sm">
               <header className="flex items-start gap-3">
-                <ImageOrPlaceholder src={r.avatar} alt="" label="" className="size-[34px] flex-none rounded-full" sizes="34px" />
+                <ImageOrPlaceholder src={null} alt="" label="" className="size-[34px] flex-none rounded-full" sizes="34px" />
                 <div className="flex flex-col gap-0.5">
                   <span className="font-bold">{r.author}</span>
                   <RatingStars value={r.rating} size={13} />
                   <span className="text-xs font-extralight">
-                    {fmtDate(r.date)} | Phân loại hàng: {r.variant}
+                    {fmtDate(r.date)}{r.variant ? ` | Phân loại hàng: ${r.variant}` : ""}
                   </span>
                 </div>
               </header>
               <p className="text-xs">
-                Chất lượng sản phẩm: <strong>{r.quality}</strong>
+                Chất lượng sản phẩm: <strong>{ratingLabel(r.rating)}</strong>
               </p>
-              <p className="text-xs font-extralight">{r.content}</p>
-              {r.images.length > 0 && (
-                <ul className="flex gap-2.5 pt-1">
-                  {r.images.map((src, i) => (
-                    <li key={i}>
-                      <ImageOrPlaceholder src={src} alt={`Ảnh đánh giá ${i + 1}`} label="" className="size-[72px]" sizes="72px" />
-                    </li>
-                  ))}
-                </ul>
-              )}
-              <footer className="flex items-center justify-between pt-1 text-xs">
-                {/* TODO(reviews): like/báo cáo cần đăng nhập + lưu vào Supabase */}
-                <span className="inline-flex items-center gap-1.5" aria-label={`${r.likes} lượt thích`}>
-                  <ThumbIcon className="size-4" /> {r.likes}
-                </span>
-                <FlagIcon className="size-4" aria-label="Báo cáo" role="img" />
-              </footer>
+              {r.content && <p className="whitespace-pre-line break-words text-xs font-extralight">{r.content}</p>}
+              {/* TODO(reviews): nút thích / báo cáo cần đăng nhập + lưu vào Supabase; TODO(media): ảnh/video đánh giá */}
             </article>
           </li>
         ))}

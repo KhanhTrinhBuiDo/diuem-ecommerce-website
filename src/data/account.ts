@@ -29,8 +29,10 @@ export type OrderItem = {
   price: number;
   image: string | null;
   href: string;
-  /** đã đánh giá chưa */
-  reviewed: boolean;
+  /** id dòng đơn (order_items.id) – dùng để đánh giá; không có khi tra cứu không đăng nhập */
+  itemId?: string;
+  /** Đánh giá hiện có của dòng này (nếu đã đánh giá) */
+  review?: { rating: number; content: string; canEdit: boolean };
 };
 
 export type OrderStep = { key: "placed" | "confirmed" | "handed" | "received"; label: string; time: string | null };
@@ -54,39 +56,6 @@ export type Order = {
   returnDeadline: string | null;
   paymentLabel: string;
 };
-
-/** Đánh giá của chính người dùng (trang "Đánh giá và phản hồi"). */
-export type MyReview = {
-  id: string;
-  author: string;
-  rating: number;
-  date: string;
-  product: string;
-  variant: string;
-  quality: string;
-  content: string;
-  images: (string | null)[];
-  likes: number;
-  /** false = đã sửa 1 lần, không cho "Đánh giá lại" (Figma: nút mờ ở thẻ đầu) */
-  canRedo: boolean;
-  href: string;
-};
-
-export const mockMyReviews: MyReview[] = [0, 1, 2].map((i) => ({
-  id: `mr-${i + 1}`,
-  author: "Khách hàng",
-  rating: 5,
-  date: "2022-09-16 11:48",
-  product: "Dầu gội Hoa Bưởi Thế hệ Mới",
-  variant: "450ml",
-  quality: "Sản phẩm tốt",
-  content:
-    "Đã mua lần thứ 2 và chất lượng vẫn quá ok. Sẽ còn ủng hộ nhiều. Mẫu mã rất đẹp, shop chú thích về cân nặng và kg rất chuẩn, chỉ cần chọn theo là ổn luôn.",
-  images: [null, null],
-  likes: 12,
-  canRedo: i !== 0,
-  href: productHref("cham-soc-toc", "dau-goi-hoa-buoi-the-he-moi"),
-}));
 
 /** TODO(content): 7 câu hỏi mẫu – Figma lặp lại một câu còn sót tên cũ "Xéo Hội"; nội dung thật chờ khách hàng. */
 export const mockFaqs = Array.from({ length: 7 }, (_, i) => ({
