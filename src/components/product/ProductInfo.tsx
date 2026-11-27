@@ -63,7 +63,7 @@ export function ProductInfo({ product, href, rating, suggestions, variantId, onV
         onAdd={addToCart}
       />
       <div className="flex flex-col gap-2.5 border-b border-black pb-5">
-        <h1 className="text-[clamp(22px,1.85vw,32px)] font-bold leading-tight">{product.name}</h1>
+        <h1 className="text-[clamp(22px,calc(var(--vw)*1.85),32px)] font-bold leading-tight">{product.name}</h1>
         <div className="flex flex-wrap items-center gap-x-[50px] gap-y-2">
           <div className="flex items-center gap-2.5">
             <RatingStars value={rating} size={28} />
@@ -77,7 +77,7 @@ export function ProductInfo({ product, href, rating, suggestions, variantId, onV
       </div>
 
       <div className="flex flex-col gap-[18px] pb-2.5">
-        <p className="text-[clamp(22px,1.85vw,32px)] font-bold leading-tight">{formatVND(variant.price)}</p>
+        <p className="text-[clamp(22px,calc(var(--vw)*1.85),32px)] font-bold leading-tight">{formatVND(variant.price)}</p>
         {product.freeShip && (
           <p className="flex items-center gap-5 text-lg">
             <TruckIcon className="h-[22px] w-[30px]" />
@@ -118,7 +118,7 @@ export function ProductInfo({ product, href, rating, suggestions, variantId, onV
           ref={addRef}
           type="button"
           onClick={addToCart}
-          className="inline-flex h-[70px] min-w-0 flex-1 items-center justify-center gap-[22px] rounded-full bg-black text-[clamp(16px,1.27vw,22px)] font-bold text-white transition-opacity hover:opacity-80 lg:max-w-[546px]"
+          className="inline-flex h-[70px] min-w-0 flex-1 items-center justify-center gap-[22px] rounded-full bg-black text-[clamp(16px,calc(var(--vw)*1.27),22px)] font-bold text-white transition-opacity hover:opacity-80 lg:max-w-[546px]"
         >
           <CartPlusIcon className="size-8" />
           Thêm vào giỏ hàng
@@ -147,10 +147,10 @@ export function ProductInfo({ product, href, rating, suggestions, variantId, onV
       </div>
 
       <section aria-labelledby="goi-y" className="flex flex-col gap-[15px] py-2.5">
-        <h2 id="goi-y" className="text-[clamp(18px,1.27vw,22px)] font-bold underline">
+        <h2 id="goi-y" className="text-[clamp(18px,calc(var(--vw)*1.27),22px)] font-bold underline">
           CÓ THỂ PHÙ HỢP VỚI BẠN
         </h2>
-        <ul className="grid grid-cols-3 gap-[clamp(10px,1.45vw,25px)] lg:max-w-[575px]">
+        <ul className="grid grid-cols-3 gap-[clamp(10px,calc(var(--vw)*1.45),25px)] lg:max-w-[575px]">
           {suggestions.slice(0, 3).map((p) => (
             <li key={p.id}>
               <MiniProductCard product={p} />
@@ -174,9 +174,8 @@ function Perk({ icon, children }: { icon: React.ReactNode; children: React.React
 /**
  * Thanh theo dõi cuộn (Figma "Noti - Follow Bar"): dính trên cùng khi người dùng cuộn qua nút thêm giỏ.
  * Chỉ hiện ≥ lg (mobile giữ nguyên bố cục, tránh che nội dung).
- * TODO(supabase): "Đã bán" lấy từ dữ liệu thật.
+ * TODO(sold): dòng "Đã bán: N" đã gỡ vì chưa có số liệu thật (trước đây là số giả 1014). Khi chốt cách tính (đơn hoàn tất? gồm cả đang giao?) thì thêm lại.
  */
-const SOLD_PLACEHOLDER = 1014;
 function FollowBar({
   visible,
   product,
@@ -205,21 +204,20 @@ function FollowBar({
       inert={!visible}
       className={`fixed inset-x-0 top-0 z-40 hidden bg-white shadow-[0_4px_20px_rgba(0,0,0,0.15)] transition-transform duration-300 lg:block ${visible ? "translate-y-0" : "-translate-y-full"}`}
     >
-      <div className="mx-auto flex max-w-[1728px] items-center justify-between gap-6 px-[clamp(24px,5.8vw,100px)] py-[clamp(12px,1.7vw,30px)]">
-        <div className="flex min-w-0 items-center gap-[clamp(20px,3vw,50px)]">
+      <div className="mx-auto flex max-w-[1728px] items-center justify-between gap-6 px-[clamp(24px,calc(var(--vw)*5.8),100px)] py-[clamp(12px,calc(var(--vw)*1.7),30px)]">
+        <div className="flex min-w-0 items-center gap-[clamp(20px,calc(var(--vw)*3),50px)]">
           <div className="flex items-center gap-5">
             <ImageOrPlaceholder src={product.images[0]} alt="" label="Ảnh" sizes="117px" className="h-[clamp(90px,8.7vw,150px)] w-[clamp(70px,6.8vw,117px)] flex-none" />
             <div className="flex min-w-0 flex-col justify-between gap-3">
               <div className="flex flex-col gap-0.5">
-                <p className="text-[clamp(15px,1.04vw,18px)] font-bold leading-[22px]">{product.name}</p>
-                <p className="text-[clamp(15px,1.04vw,18px)] leading-[22px]">{formatVND(price)}</p>
+                <p className="text-[clamp(15px,calc(var(--vw)*1.04),18px)] font-bold leading-[22px]">{product.name}</p>
+                <p className="text-[clamp(15px,calc(var(--vw)*1.04),18px)] leading-[22px]">{formatVND(price)}</p>
                 <RatingStars value={rating} size={16} />
               </div>
-              <p className="text-base font-extralight">Đã bán: {SOLD_PLACEHOLDER}</p>
             </div>
           </div>
           <div className="flex flex-col gap-[15px]">
-            <p className="flex items-center gap-[30px] text-[clamp(15px,1.04vw,18px)]">
+            <p className="flex items-center gap-[30px] text-[clamp(15px,calc(var(--vw)*1.04),18px)]">
               <span className="font-extralight">Kích thước:</span>
               <strong className="font-bold">{current.label}</strong>
             </p>
@@ -234,7 +232,7 @@ function FollowBar({
                     aria-checked={active}
                     disabled={!v.available}
                     onClick={() => onVariant(v.id)}
-                    className={`h-[33px] min-w-[100px] rounded-full border-2 px-4 text-[clamp(14px,1.04vw,18px)] font-bold ${sizeCls(v.available, active)}`}
+                    className={`h-[33px] min-w-[100px] rounded-full border-2 px-4 text-[clamp(14px,calc(var(--vw)*1.04),18px)] font-bold ${sizeCls(v.available, active)}`}
                   >
                     {v.label}
                   </button>
@@ -246,7 +244,7 @@ function FollowBar({
         <span aria-hidden="true" className="hidden h-[135px] w-px flex-none bg-black/50 xl:block" />
         <div className="flex flex-none items-center gap-[30px]">
           <Stepper value={qty} onChange={onQty} label="Số lượng (thanh theo dõi)" />
-          <button type="button" onClick={onAdd} className="h-16 w-[clamp(200px,18vw,312px)] rounded-full bg-black text-[clamp(16px,1.27vw,22px)] font-bold text-white transition-opacity hover:opacity-80">
+          <button type="button" onClick={onAdd} className="h-16 w-[clamp(200px,calc(var(--vw)*18),312px)] rounded-full bg-black text-[clamp(16px,calc(var(--vw)*1.27),22px)] font-bold text-white transition-opacity hover:opacity-80">
             Thêm vào giỏ
           </button>
         </div>

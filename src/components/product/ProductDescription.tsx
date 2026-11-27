@@ -6,12 +6,12 @@ export function ProductDescription({ product }: { product: ProductDetail }) {
   const d = product.description;
   return (
     <section id="mo-ta-san-pham" aria-labelledby="mo-ta" className="mx-auto w-full max-w-[1728px] scroll-mt-4 px-6 py-[50px] lg:px-[100px]">
-      <h2 id="mo-ta" className="mb-[30px] text-center text-[clamp(20px,1.85vw,32px)] font-medium">
+      <h2 id="mo-ta" className="mb-[30px] text-center text-[clamp(20px,calc(var(--vw)*1.85),32px)] font-medium">
         MÔ TẢ SẢN PHẨM
       </h2>
       <div className={`grid items-start gap-8 lg:gap-10 ${product.descriptionImage ? "lg:grid-cols-[minmax(0,5fr)_minmax(0,8fr)]" : "mx-auto max-w-[900px]"}`}>
         <div className="flex flex-col gap-3">
-          <h3 className="text-[clamp(18px,1.45vw,25px)] font-bold">{product.name}</h3>
+          <h3 className="text-[clamp(18px,calc(var(--vw)*1.45),25px)] font-bold">{product.name}</h3>
           {d.intro && <p className="text-sm font-extralight">{d.intro}</p>}
           <dl className="divide-y divide-rule border-y border-rule text-sm">
             {d.rows.map((r) => (

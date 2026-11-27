@@ -14,7 +14,7 @@ export function Field({ label, error, className = "", id, ...props }: Common & I
         id={fid}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${fid}-err` : undefined}
-        className="h-[62px] w-full rounded-full border border-black bg-white px-6 text-[clamp(15px,1.04vw,18px)] font-extralight placeholder:text-black/70 lg:pl-[50px] lg:pr-2.5"
+        className="h-[62px] w-full rounded-full border border-black bg-white px-6 text-[clamp(15px,calc(var(--vw)*1.04),18px)] font-extralight placeholder:text-black/70 lg:pl-[50px] lg:pr-2.5"
         {...props}
       />
       {error && (
@@ -36,7 +36,7 @@ export function TextAreaField({ label, className = "", id, ...props }: Common & 
       <textarea
         id={fid}
         rows={5}
-        className="h-[167px] w-full resize-none rounded-[20px] border border-black bg-white px-6 py-5 text-[clamp(15px,1.04vw,18px)] font-extralight placeholder:text-black/70 lg:pl-[50px] lg:pr-2.5"
+        className="h-[167px] w-full resize-none rounded-[20px] border border-black bg-white px-6 py-5 text-[clamp(15px,calc(var(--vw)*1.04),18px)] font-extralight placeholder:text-black/70 lg:pl-[50px] lg:pr-2.5"
         {...props}
       />
     </div>

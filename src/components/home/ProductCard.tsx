@@ -51,11 +51,11 @@ export function ProductCard({ product, variant = "home" }: Props) {
       </div>
       <Link href={product.href} className="block">
         <h3
-          className={`${catalog ? "mt-2.5 truncate font-extralight" : "mt-[13px] line-clamp-2 font-light"} text-[clamp(15px,1.16vw,20px)] leading-tight transition-colors group-hover:text-brand`}
+          className={`${catalog ? "mt-2.5 truncate font-extralight" : "mt-[13px] line-clamp-2 font-light"} text-[clamp(15px,calc(var(--vw)*1.16),20px)] leading-tight transition-colors group-hover:text-brand`}
         >
           {product.name}
         </h3>
-        <p className={`${catalog ? "mt-2.5" : "mt-[13px]"} text-[clamp(15px,1.16vw,20px)] font-bold leading-tight`}>{formatVND(product.price)}</p>
+        <p className={`${catalog ? "mt-2.5" : "mt-[13px]"} text-[clamp(15px,calc(var(--vw)*1.16),20px)] font-bold leading-tight`}>{formatVND(product.price)}</p>
       </Link>
     </div>
   );

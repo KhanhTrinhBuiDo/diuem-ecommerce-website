@@ -17,7 +17,7 @@ type Props = {
  * Ảnh dùng chung toàn site. Khi chưa có ảnh thật (src = null) sẽ hiện khung placeholder
  * để bố cục vẫn đúng như Figma. Wrapper luôn `relative overflow-hidden`; đặt kích thước bằng `className`.
  */
-export function ImageOrPlaceholder({ src, alt, label, tone = "light", sizes = "100vw", priority = false, className = "" }: Props) {
+export function ImageOrPlaceholder({ src, alt, label, tone = "light", sizes = "calc(var(--vw)*100)", priority = false, className = "" }: Props) {
   // Nếu caller đã đặt absolute/fixed thì không thêm `relative` (tránh hai lớp position tranh nhau).
   const pos = /(^|\s)(absolute|fixed)(\s|$)/.test(className) ? "" : "relative";
   if (src) {

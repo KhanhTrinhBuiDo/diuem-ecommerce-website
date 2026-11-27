@@ -15,9 +15,9 @@ export type Collection = {
 };
 
 /** Trang tổng /san-pham */
-export const allProductsCollection: Collection = { slug: "tat-ca", name: "Sản phẩm", title: "SẢN PHẨM", banner: null };
+export const allProductsCollection: Collection = { slug: "tat-ca", name: "Sản phẩm", title: "SẢN PHẨM", banner: siteImage("Product_Catalog/0.San_pham") };
 /** Trang /new-arrivals */
-export const newArrivalsCollection: Collection = { slug: "new-arrivals", name: "New Arrivals", title: "NEW ARRIVALS", banner: null };
+export const newArrivalsCollection: Collection = { slug: "new-arrivals", name: "New Arrivals", title: "NEW ARRIVALS", banner: siteImage("Product_Catalog/0.New_arrivals") };
 
 const banners: Record<string, string | null> = {
   "cham-soc-mat": siteImage("Product_Catalog/3.Cham_soc_mat"),

@@ -35,11 +35,11 @@ function ReviewCard({ r }: { r: MyReview }) {
           <div className="flex gap-2.5">
             {/* Sửa đánh giá: mở từ chi tiết đơn hàng (nút "Đánh giá") */}
             {r.canRedo && (
-              <Link href="/tai-khoan/lich-su-mua-hang" className="grid h-[42px] place-items-center rounded-[5px] border-2 border-black px-5 text-[clamp(13px,1.04vw,18px)] font-light">
+              <Link href="/tai-khoan/lich-su-mua-hang" className="grid h-[42px] place-items-center rounded-[5px] border-2 border-black px-5 text-[clamp(13px,calc(var(--vw)*1.04),18px)] font-light">
                 Đánh giá lại
               </Link>
             )}
-            <Link href={r.href} className="grid h-[42px] place-items-center rounded-[5px] border-2 border-black px-5 text-[clamp(13px,1.04vw,18px)] font-light">
+            <Link href={r.href} className="grid h-[42px] place-items-center rounded-[5px] border-2 border-black px-5 text-[clamp(13px,calc(var(--vw)*1.04),18px)] font-light">
               Xem trực tiếp
             </Link>
           </div>
@@ -57,12 +57,12 @@ export function MyReviewsView({ reviews, signedIn }: { reviews: MyReview[]; sign
   if (reviews.length === 0) {
     return (
       <div className="flex flex-col gap-[25px]">
-        <p className="text-[clamp(14px,1.04vw,18px)]">Bạn chưa có bất kỳ đánh giá nào...</p>
+        <p className="text-[clamp(14px,calc(var(--vw)*1.04),18px)]">Bạn chưa có bất kỳ đánh giá nào...</p>
         <div className="relative flex min-h-[280px] flex-col justify-end gap-4 overflow-hidden rounded-[10px] border-y-8 border-line p-6 sm:min-h-[346px] sm:p-[50px]">
           {/* TODO(image): ảnh banner "[TMĐT] - PRODUCT DESIGN" */}
           <ImageOrPlaceholder src={null} alt="" label="Banner quyền lợi thành viên" tone="dark" className="absolute inset-0" />
-          <h2 className="relative max-w-[605px] text-[clamp(16px,1.16vw,20px)] font-bold text-white [text-shadow:0_4px_20px_rgba(0,0,0,0.5)]">Nhiều quyền lợi hấp dẫn đang chờ bạn</h2>
-          <Link href="/san-pham" className="relative grid h-[39px] w-[235px] place-items-center rounded-[30px] border border-white text-[clamp(15px,1.27vw,22px)] font-medium text-white shadow-[0_4px_4px_#000]">
+          <h2 className="relative max-w-[605px] text-[clamp(16px,calc(var(--vw)*1.16),20px)] font-bold text-white [text-shadow:0_4px_20px_rgba(0,0,0,0.5)]">Nhiều quyền lợi hấp dẫn đang chờ bạn</h2>
+          <Link href="/san-pham" className="relative grid h-[39px] w-[235px] place-items-center rounded-[30px] border border-white text-[clamp(15px,calc(var(--vw)*1.27),22px)] font-medium text-white shadow-[0_4px_4px_#000]">
             Khám phá
           </Link>
         </div>

@@ -27,7 +27,7 @@ const benefits: { title: ReactNode; icon: ReactNode }[] = [
   },
 ];
 
-const inputCls = "h-[52px] w-full rounded-[30px] border-2 border-black/50 bg-white px-6 text-[clamp(15px,1.04vw,18px)] font-light placeholder:text-black/50 lg:px-[50px]";
+const inputCls = "h-[52px] w-full rounded-[30px] border-2 border-black/50 bg-white px-6 text-[clamp(15px,calc(var(--vw)*1.04),18px)] font-light placeholder:text-black/50 lg:px-[50px]";
 
 function PasswordInput({ name, label, autoComplete }: { name: string; label: string; autoComplete: string }) {
   const [show, setShow] = useState(false);
@@ -126,34 +126,34 @@ export function AuthModal({ mode, onModeChange, onClose }: Props) {
             <CloseIcon className="size-[22px]" />
           </button>
 
-          <div className="max-h-[90vh] overflow-y-auto rounded-[30px] px-6 pb-12 pt-10 lg:px-[100px] lg:pb-[100px] lg:pt-[50px]">
+          <div className="max-h-[calc(var(--vh)*90)] overflow-y-auto rounded-[30px] px-6 pb-12 pt-10 lg:px-[100px] lg:pb-[100px] lg:pt-[50px]">
             <div className="flex flex-col gap-[25px]">
               <header className="flex flex-col gap-[15px]">
                 <div className="flex items-center gap-3 text-brand">
                   <LogoMark className="h-[64px] w-[72px]" />
-                  <span className="text-[clamp(28px,2.6vw,44px)] font-normal leading-none">Dịu Em</span>
+                  <span className="text-[clamp(28px,calc(var(--vw)*2.6),44px)] font-normal leading-none">Dịu Em</span>
                 </div>
-                <h2 id={titleId} className="text-[clamp(24px,2.55vw,44px)] font-medium leading-[1.25]">
+                <h2 id={titleId} className="text-[clamp(24px,calc(var(--vw)*2.55),44px)] font-medium leading-[1.25]">
                   Vô số đặc quyền và quyền lợi mua sắm đang chờ bạn
                 </h2>
               </header>
 
               <section aria-label="Quyền lợi thành viên" className="flex flex-col gap-3">
-                <p className="text-[clamp(14px,1.04vw,18px)] font-light">
+                <p className="text-[clamp(14px,calc(var(--vw)*1.04),18px)] font-light">
                   Quyền lời dành riêng cho bạn khi tham gia <strong className="font-bold">Dịu Em</strong>
                 </p>
                 <ul className="grid gap-3 sm:grid-cols-3 lg:gap-5">
                   {benefits.map((b, i) => (
                     <li key={i} className="flex h-[108px] items-center gap-3 border-[10px] border-line bg-white px-3">
                       <span className="grid w-[60px] flex-none place-items-center text-black/70 blur-[1px]">{b.icon}</span>
-                      <span className="text-[clamp(16px,1.27vw,22px)] font-bold leading-[1.4]">{b.title}</span>
+                      <span className="text-[clamp(16px,calc(var(--vw)*1.27),22px)] font-bold leading-[1.4]">{b.title}</span>
                     </li>
                   ))}
                 </ul>
               </section>
 
               <section aria-label="Đăng nhập nhanh" className="flex flex-col gap-[11px]">
-                <h3 className="text-[clamp(14px,1.04vw,18px)] font-medium">Đăng nhập hoặc đăng ký (miễn phí)</h3>
+                <h3 className="text-[clamp(14px,calc(var(--vw)*1.04),18px)] font-medium">Đăng nhập hoặc đăng ký (miễn phí)</h3>
                 <div className="flex gap-5">
                   <button type="button" onClick={google} aria-label="Tiếp tục với Google" className="grid size-[70px] place-items-center rounded-[10px] border border-[#db7a6a] transition-colors hover:bg-black/5">
                     <GoogleLogo className="size-[49px]" />
@@ -166,7 +166,7 @@ export function AuthModal({ mode, onModeChange, onClose }: Props) {
 
               <div role="separator" className="flex items-center gap-2.5">
                 <span className="h-0.5 w-[120px] max-w-[20%] bg-rule" />
-                <span className="text-[clamp(14px,1.04vw,18px)] font-light">Hoặc</span>
+                <span className="text-[clamp(14px,calc(var(--vw)*1.04),18px)] font-light">Hoặc</span>
                 <span className="h-0.5 flex-1 bg-rule" />
               </div>
 
@@ -182,7 +182,7 @@ export function AuthModal({ mode, onModeChange, onClose }: Props) {
                 <PasswordInput name="password" label="Mật khẩu" autoComplete={isRegister ? "new-password" : "current-password"} />
                 {isRegister && <PasswordInput name="confirm" label="Nhập lại mật khẩu" autoComplete="new-password" />}
 
-                <button type="submit" disabled={busy} className="h-[52px] w-full rounded-[30px] border-2 border-white/50 bg-black text-[clamp(15px,1.04vw,18px)] font-bold text-white outline outline-1 outline-black/50 transition-opacity hover:opacity-80 disabled:opacity-50">
+                <button type="submit" disabled={busy} className="h-[52px] w-full rounded-[30px] border-2 border-white/50 bg-black text-[clamp(15px,calc(var(--vw)*1.04),18px)] font-bold text-white outline outline-1 outline-black/50 transition-opacity hover:opacity-80 disabled:opacity-50">
                   {busy ? "Đang xử lý..." : isRegister ? "Đăng ký" : "Đăng nhập"}
                 </button>
 
@@ -192,7 +192,7 @@ export function AuthModal({ mode, onModeChange, onClose }: Props) {
                   </p>
                 )}
 
-                <div className="flex items-center justify-between gap-4 text-[clamp(14px,1.04vw,18px)] font-medium underline">
+                <div className="flex items-center justify-between gap-4 text-[clamp(14px,calc(var(--vw)*1.04),18px)] font-medium underline">
                   <button type="button" onClick={() => onModeChange(isRegister ? "login" : "register")} className="text-left underline hover:text-brand">
                     {isRegister ? "Đăng nhập ngay" : "Đăng ký tài khoản"}
                   </button>

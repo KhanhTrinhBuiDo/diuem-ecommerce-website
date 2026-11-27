@@ -80,10 +80,10 @@ export function ReviewModal({ open, onClose, items, onDone }: { open: boolean; o
       aria-labelledby="review-title"
       onClose={onClose}
       onClick={(e) => e.target === ref.current && close()}
-      className="m-auto max-h-[92vh] w-[min(1494px,94vw)] overflow-y-auto bg-white p-0 backdrop:bg-black/50"
+      className="m-auto max-h-[calc(var(--vh)*92)] w-[min(1494px,calc(var(--vw)*94))] overflow-y-auto bg-white p-0 backdrop:bg-black/50"
     >
       <div className="flex flex-col gap-8 px-5 py-8 sm:px-[100px] sm:py-[50px]">
-        <h2 id="review-title" className="text-[clamp(22px,1.85vw,32px)] font-bold">
+        <h2 id="review-title" className="text-[clamp(22px,calc(var(--vw)*1.85),32px)] font-bold">
           Đánh giá sản phẩm
         </h2>
         {list.length === 0 && <p className="font-light">Vui lòng đăng nhập bằng tài khoản đã đặt đơn này để đánh giá sản phẩm.</p>}
@@ -102,23 +102,23 @@ export function ReviewModal({ open, onClose, items, onDone }: { open: boolean; o
               {isDone ? (
                 <div className="px-5 pt-6 sm:px-[50px]">
                   {viewing === id && (
-                    <p className="mb-4 text-[clamp(13px,1.04vw,18px)] font-light">
+                    <p className="mb-4 text-[clamp(13px,calc(var(--vw)*1.04),18px)] font-light">
                       Chất lượng sản phẩm: {"★".repeat(sv.rating)}{"☆".repeat(5 - sv.rating)}{sv.content ? ` — ${sv.content}` : ""}
                     </p>
                   )}
                   <div className="flex items-center justify-end gap-8">
                     {sv.canEdit ? (
-                      <button type="button" onClick={() => setEditing(id)} className="text-[clamp(14px,1.27vw,22px)] text-muted">
+                      <button type="button" onClick={() => setEditing(id)} className="text-[clamp(14px,calc(var(--vw)*1.27),22px)] text-muted">
                         Sửa (còn 1 lần)
                       </button>
                     ) : (
-                      <span className="text-[clamp(13px,1.04vw,18px)] font-light text-black/50">Đã sửa 1 lần</span>
+                      <span className="text-[clamp(13px,calc(var(--vw)*1.04),18px)] font-light text-black/50">Đã sửa 1 lần</span>
                     )}
                     <button
                       type="button"
                       aria-expanded={viewing === id}
                       onClick={() => setViewing(viewing === id ? null : id)}
-                      className="h-[57px] rounded-[5px] border-2 border-black px-8 text-[clamp(14px,1.27vw,22px)]"
+                      className="h-[57px] rounded-[5px] border-2 border-black px-8 text-[clamp(14px,calc(var(--vw)*1.27),22px)]"
                     >
                       Xem lại đánh giá
                     </button>
@@ -134,11 +134,11 @@ export function ReviewModal({ open, onClose, items, onDone }: { open: boolean; o
                 >
                   {sv && <p className="text-sm text-black/60">Bạn chỉ được sửa đánh giá này một lần.</p>}
                   <div className="flex flex-wrap items-center gap-x-10 gap-y-2">
-                    <span className="text-[clamp(14px,1.27vw,22px)] font-light">Chất lượng sản phẩm:</span>
+                    <span className="text-[clamp(14px,calc(var(--vw)*1.27),22px)] font-light">Chất lượng sản phẩm:</span>
                     <Stars value={d.rating} onChange={(n) => patch(id, { rating: n })} />
                   </div>
                   <div className="flex flex-col gap-5">
-                    <label htmlFor={`cm-${id}`} className="text-[clamp(14px,1.27vw,22px)] font-light">
+                    <label htmlFor={`cm-${id}`} className="text-[clamp(14px,calc(var(--vw)*1.27),22px)] font-light">
                       Bình luận:
                     </label>
                     <textarea
@@ -147,21 +147,21 @@ export function ReviewModal({ open, onClose, items, onDone }: { open: boolean; o
                       maxLength={1000}
                       onChange={(e) => patch(id, { text: e.target.value })}
                       placeholder="Hãy chia sẻ những điều bạn thích về sản phẩm này với người mua khác nhé."
-                      className="h-[196px] w-full resize-none bg-[#f3f3f3] p-6 text-[clamp(14px,1.27vw,22px)] font-light placeholder:text-muted"
+                      className="h-[196px] w-full resize-none bg-[#f3f3f3] p-6 text-[clamp(14px,calc(var(--vw)*1.27),22px)] font-light placeholder:text-muted"
                     />
                   </div>
                   {errs[id] && <p role="alert" className="text-sm text-red-600">{errs[id]}</p>}
                   <div className="flex items-center justify-end gap-6">
                     {sv ? (
-                      <button type="button" onClick={() => { setEditing(null); setDrafts((s) => { const { [id]: _x, ...rest } = s; return rest; }); }} className="text-[clamp(14px,1.27vw,22px)] text-muted">
+                      <button type="button" onClick={() => { setEditing(null); setDrafts((s) => { const { [id]: _x, ...rest } = s; return rest; }); }} className="text-[clamp(14px,calc(var(--vw)*1.27),22px)] text-muted">
                         Hủy
                       </button>
                     ) : (
-                      <button type="button" onClick={() => setDrafts((s) => ({ ...s, [id]: EMPTY }))} className="text-[clamp(14px,1.27vw,22px)] text-muted">
+                      <button type="button" onClick={() => setDrafts((s) => ({ ...s, [id]: EMPTY }))} className="text-[clamp(14px,calc(var(--vw)*1.27),22px)] text-muted">
                         Làm mới
                       </button>
                     )}
-                    <button type="submit" disabled={busy === id} className="h-[57px] rounded-[5px] bg-black px-8 text-[clamp(14px,1.27vw,22px)] text-white disabled:opacity-50">
+                    <button type="submit" disabled={busy === id} className="h-[57px] rounded-[5px] bg-black px-8 text-[clamp(14px,calc(var(--vw)*1.27),22px)] text-white disabled:opacity-50">
                       {busy === id ? "Đang gửi…" : sv ? "Lưu chỉnh sửa" : "Đánh giá sản phẩm"}
                     </button>
                   </div>
@@ -172,13 +172,13 @@ export function ReviewModal({ open, onClose, items, onDone }: { open: boolean; o
         })}
 
         <div className="flex items-center justify-end gap-[75px]">
-          <button type="button" onClick={close} className="text-[clamp(18px,1.62vw,28px)] text-muted">
+          <button type="button" onClick={close} className="text-[clamp(18px,calc(var(--vw)*1.62),28px)] text-muted">
             Trở lại
           </button>
           <button
             type="button"
             onClick={close}
-            className="h-[75px] w-[min(256px,50%)] rounded-[5px] border-2 border-black bg-line text-[clamp(18px,1.62vw,28px)] text-white [text-shadow:0_4px_20px_#000]"
+            className="h-[75px] w-[min(256px,50%)] rounded-[5px] border-2 border-black bg-line text-[clamp(18px,calc(var(--vw)*1.62),28px)] text-white [text-shadow:0_4px_20px_#000]"
           >
             Hoàn thành
           </button>

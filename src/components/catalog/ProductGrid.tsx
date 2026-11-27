@@ -6,7 +6,7 @@ import { ArrowRight } from "@/components/ui/ArrowRight";
 
 /**
  * Lưới sản phẩm (Figma Item-list): 4 cột (2 cột trên mobile), thẻ 305×451, cách nhau 41px.
- * Nút "XEM THÊM →" (nền đen, 294×47) tải thêm `pageSize` sản phẩm; dòng "Hiển thị X trên tổng số N sản phẩm".
+ * Nút "XEM THÊM →" (nền đen, 294×47) tải thêm `pageSize` sản phẩm.
  * Hiện tải thêm ngay trên trình duyệt từ danh sách đã có.
  * TODO(supabase): khi có database, đổi sang phân trang phía server (limit/offset) thay vì cắt mảng.
  */
@@ -18,11 +18,11 @@ export function ProductGrid({ products, pageSize = 12, title, id }: { products: 
   return (
     <div className="min-w-0 flex-1 px-6 pb-[50px] lg:pl-5 lg:pr-[50px]">
       {title && (
-        <h2 id={id} className="pt-6 text-[clamp(18px,1.45vw,25px)] font-bold leading-tight lg:pt-[50px]">
+        <h2 id={id} className="pt-6 text-[clamp(18px,calc(var(--vw)*1.45),25px)] font-bold leading-tight lg:pt-[50px]">
           {title}
         </h2>
       )}
-      <ul className={`grid grid-cols-2 gap-x-4 gap-y-10 ${title ? "pt-4 lg:pt-6" : "pt-6 lg:pt-[50px]"} lg:grid-cols-4 lg:gap-x-[clamp(20px,2.4vw,41px)] lg:gap-y-[50px]`}>
+      <ul className={`grid grid-cols-2 gap-x-4 gap-y-10 ${title ? "pt-4 lg:pt-6" : "pt-6 lg:pt-[50px]"} lg:grid-cols-4 lg:gap-x-[clamp(20px,calc(var(--vw)*2.4),41px)] lg:gap-y-[50px]`}>
         {products.slice(0, shown).map((p) => (
           <li key={p.id}>
             <ProductCard product={p} variant="catalog" />
@@ -35,15 +35,12 @@ export function ProductGrid({ products, pageSize = 12, title, id }: { products: 
           <button
             type="button"
             onClick={() => setVisible((v) => Math.min(v + pageSize, total))}
-            className="inline-flex h-[47px] w-[294px] max-w-full items-center justify-center gap-2.5 rounded-full border border-white bg-black p-2.5 text-[clamp(16px,1.27vw,22px)] font-medium text-white transition-opacity hover:opacity-80"
+            className="inline-flex h-[47px] w-[294px] max-w-full items-center justify-center gap-2.5 rounded-full border border-white bg-black p-2.5 text-[clamp(16px,calc(var(--vw)*1.27),22px)] font-medium text-white transition-opacity hover:opacity-80"
           >
             XEM THÊM
             <ArrowRight width={30} />
           </button>
         )}
-        <p aria-live="polite" className="text-center text-[clamp(14px,1.27vw,22px)] font-extralight leading-tight">
-          Hiển thị {shown} trên tổng số {total} sản phẩm
-        </p>
       </div>
     </div>
   );

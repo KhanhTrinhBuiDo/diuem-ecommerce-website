@@ -38,7 +38,7 @@ export function ProfileView({ profile, signedIn }: { profile: Profile; signedIn:
     ["Email", profile.email || "—"],
     ["Ngày sinh:", fmtDate(profile.birthday)],
   ];
-  const input = "h-12 w-full rounded-[5px] border border-black bg-white px-4 text-[clamp(14px,1.04vw,18px)] font-light";
+  const input = "h-12 w-full rounded-[5px] border border-black bg-white px-4 text-[clamp(14px,calc(var(--vw)*1.04),18px)] font-light";
 
   return (
     <div>
@@ -63,7 +63,7 @@ export function ProfileView({ profile, signedIn }: { profile: Profile; signedIn:
         </form>
       ) : (
         <>
-          <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-5 text-[clamp(15px,1.27vw,22px)] leading-tight sm:gap-x-12 lg:px-[50px]">
+          <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-5 text-[clamp(15px,calc(var(--vw)*1.27),22px)] leading-tight sm:gap-x-12 lg:px-[50px]">
             {rows.map(([k, v]) => (
               <div key={k} className="contents">
                 <dt className="font-bold lg:w-[279px]">{k}</dt>
@@ -72,7 +72,7 @@ export function ProfileView({ profile, signedIn }: { profile: Profile; signedIn:
             ))}
           </dl>
           {msg && <p role="status" className="mt-6 text-sm text-brand lg:px-[50px]">{msg}</p>}
-          <button type="button" onClick={() => { setForm(profile); setMsg(""); setEdit(true); }} className="mt-10 flex h-[59px] w-full max-w-[714px] items-center justify-center rounded-full border border-black bg-black px-6 text-[clamp(15px,1.27vw,22px)] font-bold text-white hover:opacity-80">
+          <button type="button" onClick={() => { setForm(profile); setMsg(""); setEdit(true); }} className="mt-10 flex h-[59px] w-full max-w-[714px] items-center justify-center rounded-full border border-black bg-black px-6 text-[clamp(15px,calc(var(--vw)*1.27),22px)] font-bold text-white hover:opacity-80">
             CẬP NHẬT THÔNG TIN CÁ NHÂN
           </button>
         </>

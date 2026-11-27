@@ -36,9 +36,9 @@ export function ProductReviews({ reviews, average }: { reviews: Review[]; averag
     <section aria-labelledby="danh-gia" className="mx-auto w-full max-w-[1728px] px-6 py-[50px] lg:px-[100px]">
       <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-10">
         <div className="flex-none">
-          <h2 id="danh-gia" className="text-[clamp(20px,1.85vw,32px)] font-bold">ĐÁNH GIÁ SẢN PHẨM</h2>
+          <h2 id="danh-gia" className="text-[clamp(20px,calc(var(--vw)*1.85),32px)] font-bold">ĐÁNH GIÁ SẢN PHẨM</h2>
           <div className="mt-2 flex items-center gap-3">
-            <span className="text-[clamp(32px,3.2vw,56px)] font-bold leading-none">{average.toFixed(1)}</span>
+            <span className="text-[clamp(32px,calc(var(--vw)*3.2),56px)] font-bold leading-none">{average.toFixed(1)}</span>
             <span className="text-lg font-bold">trên 5</span>
             <RatingStars value={average} size={24} />
           </div>
@@ -88,12 +88,12 @@ export function ProductReviews({ reviews, average }: { reviews: Review[]; averag
 
       <div className="mt-8 flex flex-col items-center gap-3">
         {shown.length < list.length && (
-          <button type="button" onClick={() => setVisible((v) => v + PAGE)} className="inline-flex h-[47px] w-[294px] max-w-full items-center justify-center gap-2.5 rounded-full bg-black text-[clamp(16px,1.27vw,22px)] font-medium text-white transition-opacity hover:opacity-80">
+          <button type="button" onClick={() => setVisible((v) => v + PAGE)} className="inline-flex h-[47px] w-[294px] max-w-full items-center justify-center gap-2.5 rounded-full bg-black text-[clamp(16px,calc(var(--vw)*1.27),22px)] font-medium text-white transition-opacity hover:opacity-80">
             XEM THÊM
             <ArrowRight width={30} />
           </button>
         )}
-        <p aria-live="polite" className="text-center text-[clamp(14px,1.04vw,18px)] font-extralight">
+        <p aria-live="polite" className="text-center text-[clamp(14px,calc(var(--vw)*1.04),18px)] font-extralight">
           Hiển thị {shown.length} trên tổng số {list.length} bình luận
         </p>
       </div>

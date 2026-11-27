@@ -12,7 +12,7 @@ export function ExploreButton({ href, children = "Xem chi tiết", className = "
   return (
     <Link
       href={href}
-      className={`inline-flex h-[61px] w-[371px] max-w-full items-center justify-center gap-[17px] rounded-full border-2 border-white p-[15px] text-[clamp(18px,1.27vw,22px)] font-medium text-white [text-shadow:0_4px_30px_#ff66c4] transition-colors hover:bg-white hover:text-black hover:[text-shadow:none] ${className}`}
+      className={`inline-flex h-[61px] w-[371px] max-w-full items-center justify-center gap-[17px] rounded-full border-2 border-white p-[15px] text-[clamp(18px,calc(var(--vw)*1.27),22px)] font-medium text-white [text-shadow:0_4px_30px_#ff66c4] transition-colors hover:bg-white hover:text-black hover:[text-shadow:none] ${className}`}
     >
       {children}
       <ArrowRight />

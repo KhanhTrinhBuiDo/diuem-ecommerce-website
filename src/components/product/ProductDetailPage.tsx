@@ -37,10 +37,10 @@ export function ProductDetailPage({ product, collection, href, suggestions, rela
       <ProductDescription product={product} />
 
       <section aria-labelledby="cung-thich" className="mx-auto w-full max-w-[1728px] px-6 py-[50px] lg:px-[100px]">
-        <h2 id="cung-thich" className="mb-[30px] text-center text-[clamp(20px,1.85vw,32px)] font-medium">
+        <h2 id="cung-thich" className="mb-[30px] text-center text-[clamp(20px,calc(var(--vw)*1.85),32px)] font-medium">
           CÓ THỂ BẠN CŨNG THÍCH
         </h2>
-        <ul className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-[clamp(20px,2.4vw,42px)]">
+        <ul className="grid grid-cols-2 gap-4 lg:grid-cols-4 lg:gap-[clamp(20px,calc(var(--vw)*2.4),42px)]">
           {related.slice(0, 4).map((p) => (
             <li key={p.id}>
               <ProductCard product={p} />

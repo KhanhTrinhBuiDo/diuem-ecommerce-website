@@ -15,6 +15,25 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/* Thu nhỏ toàn site về 67% trên màn hình desktop (≥1024px), giống khi người dùng zoom trình duyệt 67%.
+   CSS `zoom` không tự đổi đơn vị vw/vh → dùng --vw/--vh (đã chia 0.67) thay cho 1vw/1vh ở mọi nơi.
+   Điện thoại/máy tính bảng giữ nguyên tỉ lệ 100%. Muốn đổi mức: sửa 0.67 (2 chỗ) cho cùng một giá trị. */
+:root {
+  --site-zoom: 1;
+  --vw: 1vw;
+  --vh: 1vh;
+}
+@media (min-width: 1024px) {
+  :root {
+    --site-zoom: 0.67;
+    --vw: calc(1vw / 0.67);
+    --vh: calc(1vh / 0.67);
+  }
+  html {
+    zoom: var(--site-zoom);
+  }
+}
+
 body {
   background: #fff;
   color: #000;

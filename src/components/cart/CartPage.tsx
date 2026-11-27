@@ -113,11 +113,11 @@ export function CartPage() {
   if (placed) {
     return (
       <section aria-labelledby="done" className="mx-auto flex w-full max-w-[860px] flex-col items-center gap-6 px-6 py-16 text-center">
-        <h2 id="done" className="text-[clamp(26px,2.4vw,40px)] font-bold">Đặt hàng thành công</h2>
+        <h2 id="done" className="text-[clamp(26px,calc(var(--vw)*2.4),40px)] font-bold">Đặt hàng thành công</h2>
         <p className="font-light">
           Mã đơn hàng của bạn: <strong className="font-bold text-brand">{placed.orderNumber}</strong>
         </p>
-        <dl className="w-full max-w-[520px] text-left text-[clamp(14px,1.04vw,18px)] font-light">
+        <dl className="w-full max-w-[520px] text-left text-[clamp(14px,calc(var(--vw)*1.04),18px)] font-light">
           <div className="flex justify-between border-b border-black py-2"><dt>Tạm tính</dt><dd className="font-bold">{formatVND(placed.subtotal)}</dd></div>
           <div className="flex justify-between border-b border-black py-2"><dt>Phí giao hàng</dt><dd className="font-bold">{placed.shippingFee ? formatVND(placed.shippingFee) : "Miễn phí"}</dd></div>
           {placed.discount > 0 && <div className="flex justify-between border-b border-black py-2"><dt>Ưu đãi</dt><dd className="font-bold">-{formatVND(placed.discount)}</dd></div>}

@@ -18,7 +18,7 @@ export function AdminShell({ children, name, email }: { children: ReactNode; nam
     try { await createClient().auth.signOut(); } finally { window.location.assign("/"); }
   }
   return (
-    <div className="min-h-screen bg-[#f6f4f5]">
+    <div className="min-h-[calc(var(--vh)*100)] bg-[#f6f4f5]">
       <header className="sticky top-0 z-30 border-b-[6px] border-line bg-white">
         <div className="flex h-16 items-center justify-between gap-4 px-4 lg:px-8">
           <div className="flex items-center gap-3">

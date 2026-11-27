@@ -16,7 +16,7 @@ export function CartToast() {
   }, [lastAdded, dismissAdded]);
 
   return (
-    <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-4 top-[88px] z-[60] flex justify-end lg:inset-x-auto lg:right-[calc(max(0px,(100vw-1728px)/2)+96px)] lg:top-[150px]">
+    <div role="status" aria-live="polite" className="pointer-events-none fixed inset-x-4 top-[88px] z-[60] flex justify-end lg:inset-x-auto lg:right-[calc(max(0px,(calc(var(--vw)*100)-1728px)/2)+96px)] lg:top-[150px]">
       {lastAdded && (
         <div className="pointer-events-auto flex w-full flex-col gap-[25px] rounded-[20px] bg-white p-[30px] shadow-[0_4px_20px_rgba(0,0,0,0.25)] sm:w-[513px]">
           <div className="flex flex-col gap-[15px]">
@@ -27,14 +27,14 @@ export function CartToast() {
                 </svg>
               </button>
               <div className="flex w-full flex-col gap-5">
-                <p className="text-[clamp(15px,1.04vw,18px)] font-medium leading-[22px]">Thêm vào giỏ hàng thành công</p>
+                <p className="text-[clamp(15px,calc(var(--vw)*1.04),18px)] font-medium leading-[22px]">Thêm vào giỏ hàng thành công</p>
                 <span aria-hidden="true" className="block h-[3px] bg-[#b2b2b2]" />
               </div>
             </div>
             <div className="flex items-center gap-[19px]">
               <ImageOrPlaceholder src={lastAdded.image} alt="" label="" sizes="80px" className="size-20 flex-none" />
               <div className="flex min-w-0 flex-col justify-between gap-2.5">
-                <p className="text-[clamp(15px,1.04vw,18px)] leading-[22px]">{lastAdded.name}</p>
+                <p className="text-[clamp(15px,calc(var(--vw)*1.04),18px)] leading-[22px]">{lastAdded.name}</p>
                 <p className="text-[15px] font-light leading-[19px]">{lastAdded.variantLabel}</p>
                 <p className="flex items-center gap-2.5 text-[15px] leading-[19px]">
                   <span className="font-light">{lastAdded.qty}</span>

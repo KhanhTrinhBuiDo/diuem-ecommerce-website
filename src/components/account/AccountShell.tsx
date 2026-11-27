@@ -54,7 +54,7 @@ export function AccountShell({
                 key={n.key}
                 href={n.href}
                 aria-current={on ? "page" : undefined}
-                className={`flex h-[65px] items-center justify-between gap-4 rounded-[10px] border-2 border-black px-5 text-[clamp(16px,1.16vw,20px)] transition-colors ${
+                className={`flex h-[65px] items-center justify-between gap-4 rounded-[10px] border-2 border-black px-5 text-[clamp(16px,calc(var(--vw)*1.16),20px)] transition-colors ${
                   on ? "bg-black font-bold text-white" : "bg-white font-normal text-black hover:bg-black/5"
                 }`}
               >
@@ -67,8 +67,8 @@ export function AccountShell({
 
         <section className="min-w-0 rounded-[20px] bg-white px-5 pb-16 pt-10 shadow-[0_4px_20px_rgba(0,0,0,0.2)] lg:px-[50px] lg:pb-[100px] lg:pt-[50px]">
           <header>
-            <h1 className="-rotate-[0.26deg] text-[clamp(26px,2.55vw,44px)] font-bold leading-tight">{title}</h1>
-            {subtitle && <p className="mt-1 -rotate-[0.26deg] text-[clamp(14px,1.04vw,18px)] leading-snug">{subtitle}</p>}
+            <h1 className="-rotate-[0.26deg] text-[clamp(26px,calc(var(--vw)*2.55),44px)] font-bold leading-tight">{title}</h1>
+            {subtitle && <p className="mt-1 -rotate-[0.26deg] text-[clamp(14px,calc(var(--vw)*1.04),18px)] leading-snug">{subtitle}</p>}
             <div aria-hidden="true" className={`mt-5 h-[5px] w-full ${rule === "pink" ? "bg-line" : "bg-black"}`} />
           </header>
           <div className="mt-[35px]">{children}</div>

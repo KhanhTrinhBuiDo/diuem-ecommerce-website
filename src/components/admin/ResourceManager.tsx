@@ -39,7 +39,7 @@ type Props<T extends { id: string }> = {
 
 /**
  * Bảng quản lý CRUD dùng chung (sản phẩm, danh mục, voucher, banner, nhân viên).
- * Dữ liệu chỉ nằm trên trình duyệt (mock). TODO(supabase): thay setItems bằng server action + revalidate.
+ * Lưu qua onSave/onRemove (server action) rồi cập nhật danh sách tại chỗ; không còn dữ liệu mẫu.
  */
 export function ResourceManager<T extends { id: string }>({ title, subtitle, noun, initial, columns, fields, blank, searchText, filter, extraActions, canDelete, headerExtra, onSave, onRemove }: Props<T>) {
   const router = useRouter();

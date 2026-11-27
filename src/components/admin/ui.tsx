@@ -10,7 +10,7 @@ export function PageHeader({ title, subtitle, actions }: { title: string; subtit
     <div className="mb-6">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <h1 className="text-[clamp(22px,2vw,34px)] font-bold leading-tight">{title}</h1>
+          <h1 className="text-[clamp(22px,calc(var(--vw)*2),34px)] font-bold leading-tight">{title}</h1>
           {subtitle && <p className="mt-1 text-sm font-light text-black/60">{subtitle}</p>}
         </div>
         {actions && <div className="flex flex-wrap items-center gap-3">{actions}</div>}
@@ -25,7 +25,7 @@ export function Card({ title, action, children, className = "" }: { title?: stri
     <section className={`rounded-[20px] bg-white p-5 shadow-[0_4px_20px_rgba(0,0,0,0.12)] sm:p-6 ${className}`}>
       {(title || action) && (
         <div className="mb-4 flex items-center justify-between gap-3">
-          {title && <h2 className="text-[clamp(15px,1.16vw,18px)] font-bold">{title}</h2>}
+          {title && <h2 className="text-[clamp(15px,calc(var(--vw)*1.16),18px)] font-bold">{title}</h2>}
           {action}
         </div>
       )}
@@ -39,7 +39,7 @@ export function StatCard({ label, value, hint, tone = "default" }: { label: stri
   return (
     <div className={`rounded-[20px] p-5 shadow-[0_4px_20px_rgba(0,0,0,0.12)] ${t}`}>
       <p className="text-sm font-light opacity-80">{label}</p>
-      <p className="mt-2 text-[clamp(20px,1.85vw,30px)] font-bold leading-tight">{value}</p>
+      <p className="mt-2 text-[clamp(20px,calc(var(--vw)*1.85),30px)] font-bold leading-tight">{value}</p>
       {hint && <p className="mt-1 text-xs font-light opacity-70">{hint}</p>}
     </div>
   );
@@ -107,7 +107,7 @@ export function Dialog({ open, onClose, title, children, wide = false }: { open:
       className={`m-auto w-[calc(100%-32px)] rounded-[20px] p-0 shadow-[0_4px_30px_rgba(0,0,0,0.35)] backdrop:bg-black/50 ${wide === "xl" ? "max-w-[1100px]" : wide ? "max-w-[820px]" : "max-w-[560px]"}`}
     >
       {open && (
-        <div className="flex max-h-[85vh] flex-col">
+        <div className="flex max-h-[calc(var(--vh)*85)] flex-col">
           <div className="flex items-center justify-between gap-4 border-b-4 border-line px-6 py-4">
             <h2 className="text-lg font-bold">{title}</h2>
             <button type="button" onClick={onClose} aria-label="Đóng" className="grid size-8 place-items-center rounded-full hover:bg-black/10">

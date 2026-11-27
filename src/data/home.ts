@@ -2,6 +2,7 @@ import type { Activity } from "@/components/home/ActivitySection";
 import type { CategoryTile } from "@/components/home/CategoryTiles";
 import type { HeroSlide } from "@/components/home/HeroBanner";
 import { homeSectionLinks, mainNav } from "@/config/site";
+import { postHref, posts } from "@/data/posts";
 import { siteImage } from "@/data/site-images";
 
 /**
@@ -37,15 +38,14 @@ export const homeSections = {
   giftCombos: { title: "COMBO TẶNG NGƯỜI THƯƠNG", viewAllHref: homeSectionLinks.combos.href },
 } as const;
 
-// Figma dùng cùng một bài mẫu 3 lần → 3 bản sao tạm.
-const activityTemplate = {
-  title: "Dịu Em đồng hành cùng 50 sinh viên nữ vượt khó...",
-  excerpt:
-    "Có các chương trình chuyên biệt như Học bổng cho nữ sinh dân tộc thiểu số, hỗ trợ tài chính giáo dục chính quy cùng các hoạt động hướng nghiệp và tập huấn phát triển kỹ năng cho nữ sinh....",
-  image: null as string | null,
-  href: "/bai-viet",
-};
-export const activities: Activity[] = [1, 2, 3].map((n) => ({ ...activityTemplate, id: `activity-${n}`, image: siteImage(`General/Cung_Diu_Em_Dong_Hanh/${n}`) }));
+// 3 bài "Đồng hành Cùng Em" thật (src/data/posts.ts). Ảnh thẻ: General/Cung_Diu_Em_Dong_Hanh/<n>, chưa có thì dùng ảnh thu nhỏ của bài.
+export const activities: Activity[] = posts.map((p, i) => ({
+  id: p.slug,
+  title: p.shortTitle,
+  excerpt: p.quote.length > 190 ? p.quote.slice(0, 187).trimEnd() + "..." : p.quote,
+  image: siteImage(`General/Cung_Diu_Em_Dong_Hanh/${i + 1}`) ?? p.thumb,
+  href: postHref(p.slug),
+}));
 export const activitySectionTitle = "CÙNG DỊU EM ĐỒNG HÀNH";
 
 export const brandStory = {

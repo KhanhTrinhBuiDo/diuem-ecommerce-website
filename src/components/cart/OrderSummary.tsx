@@ -13,7 +13,7 @@ import { formatVND } from "@/lib/format";
 /** Đơn từ mức này được freeship (theo Figma "Freeship cho đơn từ 300k"). */
 export const FREESHIP_FROM = FREESHIP_FROM_VND;
 
-const row = "flex items-center justify-between gap-4 border-b border-black py-2 text-[clamp(14px,1.04vw,18px)] font-light";
+const row = "flex items-center justify-between gap-4 border-b border-black py-2 text-[clamp(14px,calc(var(--vw)*1.04),18px)] font-light";
 
 /**
  * Cột phải (Figma right): Giỏ hàng, mã ưu đãi, chi tiết thanh toán, phương thức thanh toán, nút THANH TOÁN NGAY.
@@ -71,7 +71,7 @@ export function OrderSummary({
   return (
     <section aria-labelledby="cart" className="flex flex-col gap-5 px-6 pb-10 pt-[50px] lg:pl-[50px] lg:pr-[100px]">
       <div className="flex flex-col gap-5">
-        <h2 id="cart" className="text-[clamp(28px,2.55vw,44px)] font-bold leading-tight">
+        <h2 id="cart" className="text-[clamp(28px,calc(var(--vw)*2.55),44px)] font-bold leading-tight">
           Giỏ hàng
         </h2>
         <div className="flex items-center justify-between gap-2.5">
@@ -120,8 +120,8 @@ export function OrderSummary({
                 applyVoucher();
               }
             }} placeholder="Nhập mã ưu đãi của bạn"
-            className="min-w-0 flex-1 bg-white px-6 text-[clamp(15px,1.04vw,18px)] font-extralight placeholder:text-black/70 lg:pl-[50px]" />
-          <button type="button" onClick={applyVoucher} disabled={checking} className="bg-black disabled:opacity-50 px-6 text-[clamp(15px,1.04vw,18px)] font-bold text-white hover:opacity-80 lg:px-9">
+            className="min-w-0 flex-1 bg-white px-6 text-[clamp(15px,calc(var(--vw)*1.04),18px)] font-extralight placeholder:text-black/70 lg:pl-[50px]" />
+          <button type="button" onClick={applyVoucher} disabled={checking} className="bg-black disabled:opacity-50 px-6 text-[clamp(15px,calc(var(--vw)*1.04),18px)] font-bold text-white hover:opacity-80 lg:px-9">
             Áp dụng
           </button>
         </div>
@@ -134,7 +134,7 @@ export function OrderSummary({
       </div>
 
       <section aria-labelledby="pay-detail" className="flex flex-col">
-        <h3 id="pay-detail" className="mb-2 text-[clamp(22px,1.85vw,32px)] font-bold">Chi tiết thanh toán</h3>
+        <h3 id="pay-detail" className="mb-2 text-[clamp(22px,calc(var(--vw)*1.85),32px)] font-bold">Chi tiết thanh toán</h3>
         <dl>
           <div className={row}><dt>Tạm tính</dt><dd className="font-bold">{formatVND(subtotal)}</dd></div>
           <div className={row}><dt>Voucher ưu đãi</dt><dd className="font-bold">{formatVND(discount)}</dd></div>
@@ -144,7 +144,7 @@ export function OrderSummary({
       </section>
 
       <fieldset className="flex flex-col">
-        <legend className="mb-2 text-[clamp(22px,1.85vw,32px)] font-bold">Phương thức thanh toán</legend>
+        <legend className="mb-2 text-[clamp(22px,calc(var(--vw)*1.85),32px)] font-bold">Phương thức thanh toán</legend>
         <label className={`${row} cursor-pointer justify-start gap-3`}>
           <input type="radio" name="payment" form="checkout" value="cod" defaultChecked className="size-5 accent-[#2e54ff]" />
           Thanh toán khi nhận hàng (COD)
@@ -166,7 +166,7 @@ export function OrderSummary({
 
       {submitError && <p role="alert" className="text-sm text-red-600">{submitError}</p>}
 
-      <button type="submit" form="checkout" disabled={!selected.length || submitting} className="h-[52px] w-full rounded-full bg-black text-[clamp(16px,1.27vw,22px)] font-bold text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40">
+      <button type="submit" form="checkout" disabled={!selected.length || submitting} className="h-[52px] w-full rounded-full bg-black text-[clamp(16px,calc(var(--vw)*1.27),22px)] font-bold text-white transition-opacity hover:opacity-80 disabled:cursor-not-allowed disabled:opacity-40">
         {submitting ? "ĐANG XỬ LÝ…" : "ĐẶT HÀNG"}
       </button>
     </section>

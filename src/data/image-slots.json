@@ -1,242 +1,272 @@
 [
-    {
-        "key": "General/Logo",
-        "area": "Header / chung",
-        "where": "Logo ở Header (và mọi nơi dùng LogoMark). Nên PNG/SVG nền trong suốt",
-        "size": "88×78 (nên xuất gấp đôi)"
-    },
-    {
-        "key": "General/Cau_chuyen_thuong_hieu",
-        "area": "Trang chủ",
-        "where": "Ảnh nền khối 'Câu chuyện thương hiệu'",
-        "size": "1528×450"
-    },
-    {
-        "key": "General/Cung_Diu_Em_Dong_Hanh/1",
-        "area": "Trang chủ",
-        "where": "'Cùng Dịu Em đồng hành' – bài 1",
-        "size": "479×350"
-    },
-    {
-        "key": "General/Cung_Diu_Em_Dong_Hanh/2",
-        "area": "Trang chủ",
-        "where": "'Cùng Dịu Em đồng hành' – bài 2",
-        "size": "479×350"
-    },
-    {
-        "key": "General/Cung_Diu_Em_Dong_Hanh/3",
-        "area": "Trang chủ",
-        "where": "'Cùng Dịu Em đồng hành' – bài 3",
-        "size": "479×350"
-    },
-    {
-        "key": "Homepage/Banner/1",
-        "area": "Trang chủ",
-        "where": "Banner đầu trang, slide 1",
-        "size": "1729×615"
-    },
-    {
-        "key": "Homepage/Banner/2",
-        "area": "Trang chủ",
-        "where": "Banner đầu trang, slide 2 (tùy chọn – có file thì tự thêm slide)",
-        "size": "1729×615"
-    },
-    {
-        "key": "Homepage/Banner/3",
-        "area": "Trang chủ",
-        "where": "Banner đầu trang, slide 3 (tùy chọn)",
-        "size": "1729×615"
-    },
-    {
-        "key": "Homepage/Catology/mat",
-        "area": "Trang chủ",
-        "where": "Thẻ danh mục 1: Chăm sóc mặt",
-        "size": "tỉ lệ 2:3"
-    },
-    {
-        "key": "Homepage/Catology/toc",
-        "area": "Trang chủ",
-        "where": "Thẻ danh mục 2: Chăm sóc tóc",
-        "size": "tỉ lệ 2:3"
-    },
-    {
-        "key": "Homepage/Catology/cothe",
-        "area": "Trang chủ",
-        "where": "Thẻ danh mục 3: Chăm sóc cơ thể",
-        "size": "tỉ lệ 2:3"
-    },
-    {
-        "key": "Homepage/Catology/khac",
-        "area": "Trang chủ",
-        "where": "Thẻ danh mục 4: Ngành khác",
-        "size": "tỉ lệ 2:3"
-    },
-    {
-        "key": "Homepage/Sub_banner/1",
-        "area": "Trang chủ",
-        "where": "Banner nền 'BÁN CHẠY NHẤT'",
-        "size": "1728×410"
-    },
-    {
-        "key": "Homepage/Sub_banner/2",
-        "area": "Trang chủ",
-        "where": "Banner nền 'SẢN PHẨM MỚI'",
-        "size": "1728×410"
-    },
-    {
-        "key": "Homepage/Sub_banner/3",
-        "area": "Trang chủ",
-        "where": "Banner nền 'QUÀ TẶNG NGƯỜI THƯƠNG'",
-        "size": "1728×410"
-    },
-    {
-        "key": "Product_Catalog/1.Cham_soc_toc",
-        "area": "Trang danh mục sản phẩm",
-        "where": "Banner /san-pham/cham-soc-toc",
-        "size": "1729×615"
-    },
-    {
-        "key": "Product_Catalog/2.Cham_soc_co_the",
-        "area": "Trang danh mục sản phẩm",
-        "where": "Banner /san-pham/cham-soc-co-the",
-        "size": "1729×615"
-    },
-    {
-        "key": "Product_Catalog/3.Cham_soc_mat",
-        "area": "Trang danh mục sản phẩm",
-        "where": "Banner /san-pham/cham-soc-mat",
-        "size": "1729×615"
-    },
-    {
-        "key": "Product_Catalog/4.Cham_soc_em_be",
-        "area": "Trang danh mục sản phẩm",
-        "where": "Banner /san-pham/cham-soc-em-be (danh mục mới thêm)",
-        "size": "1729×615"
-    },
-    {
-        "key": "Product_Catalog/5.Qua_tang",
-        "area": "Trang danh mục sản phẩm",
-        "where": "Banner /san-pham/qua-tang-nguoi-thuong",
-        "size": "1729×615"
-    },
-    {
-        "key": "About_Diu_Em/Banner",
-        "area": "Về Dịu Em",
-        "where": "Banner trang Về Dịu Em (trang chưa dựng)",
-        "size": "—"
-    },
-    {
-        "key": "About_Diu_Em/Image_1",
-        "area": "Về Dịu Em",
-        "where": "Ảnh 1 của trang Về Dịu Em (trang chưa dựng)",
-        "size": "—"
-    },
-    {
-        "key": "About_Diu_Em/Image_2",
-        "area": "Về Dịu Em",
-        "where": "Ảnh 2 của trang Về Dịu Em (trang chưa dựng)",
-        "size": "—"
-    },
-    {
-        "key": "About_Diu_Em/Image_3",
-        "area": "Về Dịu Em",
-        "where": "Ảnh 3 của trang Về Dịu Em (trang chưa dựng)",
-        "size": "—"
-    },
-    {
-        "key": "About_Diu_Em/Image_4",
-        "area": "Về Dịu Em",
-        "where": "Ảnh 4 của trang Về Dịu Em (trang chưa dựng)",
-        "size": "—"
-    },
-    {
-        "key": "About_Diu_Em/Image_5",
-        "area": "Về Dịu Em",
-        "where": "Ảnh 5 của trang Về Dịu Em (trang chưa dựng)",
-        "size": "—"
-    },
-    {
-        "key": "About_Diu_Em/Image_6",
-        "area": "Về Dịu Em",
-        "where": "Ảnh 6 của trang Về Dịu Em (trang chưa dựng)",
-        "size": "—"
-    },
-    {
-        "key": "About_Diu_Em/Image_7",
-        "area": "Về Dịu Em",
-        "where": "Ảnh 7 của trang Về Dịu Em (trang chưa dựng)",
-        "size": "—"
-    },
-    {
-        "key": "About_Diu_Em/Image_8",
-        "area": "Về Dịu Em",
-        "where": "Ảnh 8 của trang Về Dịu Em (trang chưa dựng)",
-        "size": "—"
-    },
-    {
-        "key": "About_Diu_Em/Image_9",
-        "area": "Về Dịu Em",
-        "where": "Ảnh 9 của trang Về Dịu Em (trang chưa dựng)",
-        "size": "—"
-    },
-    {
-        "key": "General/Catology/1.Cham_soc_mat",
-        "area": "Chưa gán vị trí",
-        "where": "Chưa rõ dùng ở đâu – chờ bạn xác nhận",
-        "size": "—"
-    },
-    {
-        "key": "General/Catology/2.Cham_soc_toc",
-        "area": "Chưa gán vị trí",
-        "where": "Chưa rõ dùng ở đâu – chờ bạn xác nhận",
-        "size": "—"
-    },
-    {
-        "key": "General/Catology/3.Cham_soc_co_the",
-        "area": "Chưa gán vị trí",
-        "where": "Chưa rõ dùng ở đâu – chờ bạn xác nhận",
-        "size": "—"
-    },
-    {
-        "key": "General/Catology/4.Cham_soc_khac",
-        "area": "Chưa gán vị trí",
-        "where": "Chưa rõ dùng ở đâu – chờ bạn xác nhận",
-        "size": "—"
-    },
-    {
-        "key": "header/menu-1",
-        "area": "Ngoài cấu trúc hiện có",
-        "where": "Menu lớn 'Sản phẩm' – ảnh phải trên (chỉ hiện ≥1280px)",
-        "size": "320×262"
-    },
-    {
-        "key": "header/menu-2",
-        "area": "Ngoài cấu trúc hiện có",
-        "where": "Menu lớn 'Sản phẩm' – ảnh phải dưới",
-        "size": "320×262"
-    },
-    {
-        "key": "detail/gallery-1",
-        "area": "Ngoài cấu trúc hiện có",
-        "where": "Trang chi tiết: ảnh sản phẩm 1 (cũng là ảnh thẻ sản phẩm mẫu)",
-        "size": "650×975"
-    },
-    {
-        "key": "detail/gallery-2",
-        "area": "Ngoài cấu trúc hiện có",
-        "where": "Trang chi tiết: ảnh sản phẩm 2",
-        "size": "650×975"
-    },
-    {
-        "key": "detail/description",
-        "area": "Ngoài cấu trúc hiện có",
-        "where": "Trang chi tiết: ảnh khối 'Mô tả sản phẩm'",
-        "size": "862×534"
-    },
-    {
-        "key": "footer/moit-badge",
-        "area": "Ngoài cấu trúc hiện có",
-        "where": "Huy hiệu 'Đã thông báo Bộ Công Thương'",
-        "size": "180×65"
-    }
+ {
+  "key": "General/Logo",
+  "area": "Header / chung",
+  "where": "Logo ở Header (và mọi nơi dùng LogoMark). Nên PNG/SVG nền trong suốt",
+  "size": "88×78 (nên xuất gấp đôi)"
+ },
+ {
+  "key": "General/Cau_chuyen_thuong_hieu",
+  "area": "Trang chủ",
+  "where": "Ảnh nền khối 'Câu chuyện thương hiệu'",
+  "size": "1528×450"
+ },
+ {
+  "key": "General/Cung_Diu_Em_Dong_Hanh/1",
+  "area": "Trang chủ",
+  "where": "'Cùng Dịu Em đồng hành' – bài 1",
+  "size": "479×350"
+ },
+ {
+  "key": "General/Cung_Diu_Em_Dong_Hanh/2",
+  "area": "Trang chủ",
+  "where": "'Cùng Dịu Em đồng hành' – bài 2",
+  "size": "479×350"
+ },
+ {
+  "key": "General/Cung_Diu_Em_Dong_Hanh/3",
+  "area": "Trang chủ",
+  "where": "'Cùng Dịu Em đồng hành' – bài 3",
+  "size": "479×350"
+ },
+ {
+  "key": "Homepage/Banner/1",
+  "area": "Trang chủ",
+  "where": "Banner đầu trang, slide 1",
+  "size": "1729×615"
+ },
+ {
+  "key": "Homepage/Banner/2",
+  "area": "Trang chủ",
+  "where": "Banner đầu trang, slide 2 (tùy chọn – có file thì tự thêm slide)",
+  "size": "1729×615"
+ },
+ {
+  "key": "Homepage/Banner/3",
+  "area": "Trang chủ",
+  "where": "Banner đầu trang, slide 3 (tùy chọn)",
+  "size": "1729×615"
+ },
+ {
+  "key": "Homepage/Catology/mat",
+  "area": "Trang chủ",
+  "where": "Thẻ danh mục 1: Chăm sóc mặt",
+  "size": "tỉ lệ 2:3"
+ },
+ {
+  "key": "Homepage/Catology/toc",
+  "area": "Trang chủ",
+  "where": "Thẻ danh mục 2: Chăm sóc tóc",
+  "size": "tỉ lệ 2:3"
+ },
+ {
+  "key": "Homepage/Catology/cothe",
+  "area": "Trang chủ",
+  "where": "Thẻ danh mục 3: Chăm sóc cơ thể",
+  "size": "tỉ lệ 2:3"
+ },
+ {
+  "key": "Homepage/Catology/khac",
+  "area": "Trang chủ",
+  "where": "Thẻ danh mục 4: Ngành khác",
+  "size": "tỉ lệ 2:3"
+ },
+ {
+  "key": "Homepage/Sub_banner/1",
+  "area": "Trang chủ",
+  "where": "Banner nền 'BÁN CHẠY NHẤT'",
+  "size": "1728×410"
+ },
+ {
+  "key": "Homepage/Sub_banner/2",
+  "area": "Trang chủ",
+  "where": "Banner nền 'SẢN PHẨM MỚI'",
+  "size": "1728×410"
+ },
+ {
+  "key": "Homepage/Sub_banner/3",
+  "area": "Trang chủ",
+  "where": "Banner nền 'QUÀ TẶNG NGƯỜI THƯƠNG'",
+  "size": "1728×410"
+ },
+ {
+  "key": "Product_Catalog/1.Cham_soc_toc",
+  "area": "Trang danh mục sản phẩm",
+  "where": "Banner /san-pham/cham-soc-toc",
+  "size": "1729×615"
+ },
+ {
+  "key": "Product_Catalog/2.Cham_soc_co_the",
+  "area": "Trang danh mục sản phẩm",
+  "where": "Banner /san-pham/cham-soc-co-the",
+  "size": "1729×615"
+ },
+ {
+  "key": "Product_Catalog/3.Cham_soc_mat",
+  "area": "Trang danh mục sản phẩm",
+  "where": "Banner /san-pham/cham-soc-mat",
+  "size": "1729×615"
+ },
+ {
+  "key": "Product_Catalog/4.Cham_soc_em_be",
+  "area": "Trang danh mục sản phẩm",
+  "where": "Banner /san-pham/cham-soc-em-be (danh mục mới thêm)",
+  "size": "1729×615"
+ },
+ {
+  "key": "Product_Catalog/5.Qua_tang",
+  "area": "Trang danh mục sản phẩm",
+  "where": "Banner /san-pham/qua-tang-nguoi-thuong",
+  "size": "1729×615"
+ },
+ {
+  "key": "About_Diu_Em/Banner",
+  "area": "Về Dịu Em",
+  "where": "Banner đầu trang /ve-diu-em (cả chiều rộng, cao ~360px, ảnh 2 mẹ con nằm trên giường hoa)",
+  "size": "1729×~400"
+ },
+ {
+  "key": "About_Diu_Em/Image_1",
+  "area": "Về Dịu Em",
+  "where": "Ảnh nghiêng (viền trắng, bóng hồng) cạnh chữ 'DỊU EM'",
+  "size": "484×605"
+ },
+ {
+  "key": "About_Diu_Em/Image_2",
+  "area": "Về Dịu Em",
+  "where": "Dải ảnh ngang có chữ 'Mẹ ơi, con thương mẹ...'",
+  "size": "1729×~480"
+ },
+ {
+  "key": "About_Diu_Em/Image_3",
+  "area": "Về Dịu Em",
+  "where": "Ảnh cạnh 'Hành trình bắt đầu từ những điều bình dị nhất'",
+  "size": "591×419"
+ },
+ {
+  "key": "About_Diu_Em/Image_4",
+  "area": "Về Dịu Em",
+  "where": "Banner nền 'Tự hào – Vùng nguyên liệu từ địa phương'",
+  "size": "1729×~560"
+ },
+ {
+  "key": "About_Diu_Em/Image_5",
+  "area": "Về Dịu Em",
+  "where": "Ảnh 'Công nghệ và máy móc hiện đại' (bên trái)",
+  "size": "562×374"
+ },
+ {
+  "key": "About_Diu_Em/Image_6",
+  "area": "Về Dịu Em",
+  "where": "Ảnh 'Quy trình kiểm soát nghiêm ngặt' (bên phải)",
+  "size": "562×374"
+ },
+ {
+  "key": "About_Diu_Em/Image_7",
+  "area": "Về Dịu Em",
+  "where": "Ảnh hàng 1 'Hành trình đồng hành' – Quỹ học bổng Cống Hiến (cũng dùng làm ảnh thu nhỏ bài viết 1)",
+  "size": "656×478"
+ },
+ {
+  "key": "About_Diu_Em/Image_8",
+  "area": "Về Dịu Em",
+  "where": "Ảnh hàng 2 – Bệnh viện Từ Dũ (cũng dùng làm ảnh thu nhỏ bài viết 2)",
+  "size": "656×478"
+ },
+ {
+  "key": "About_Diu_Em/Image_9",
+  "area": "Về Dịu Em",
+  "where": "Ảnh hàng 3 – Nữ sinh vùng cao / Áo ấm trường em (cũng dùng làm ảnh thu nhỏ bài viết 3)",
+  "size": "656×478"
+ },
+ {
+  "key": "General/Catology/1.Cham_soc_mat",
+  "area": "Chưa gán vị trí",
+  "where": "Chưa rõ dùng ở đâu – chờ bạn xác nhận",
+  "size": "—"
+ },
+ {
+  "key": "General/Catology/2.Cham_soc_toc",
+  "area": "Chưa gán vị trí",
+  "where": "Chưa rõ dùng ở đâu – chờ bạn xác nhận",
+  "size": "—"
+ },
+ {
+  "key": "General/Catology/3.Cham_soc_co_the",
+  "area": "Chưa gán vị trí",
+  "where": "Chưa rõ dùng ở đâu – chờ bạn xác nhận",
+  "size": "—"
+ },
+ {
+  "key": "General/Catology/4.Cham_soc_khac",
+  "area": "Chưa gán vị trí",
+  "where": "Chưa rõ dùng ở đâu – chờ bạn xác nhận",
+  "size": "—"
+ },
+ {
+  "key": "header/menu-1",
+  "area": "Ngoài cấu trúc hiện có",
+  "where": "Menu lớn 'Sản phẩm' – ảnh phải trên (chỉ hiện ≥1280px)",
+  "size": "320×262"
+ },
+ {
+  "key": "header/menu-2",
+  "area": "Ngoài cấu trúc hiện có",
+  "where": "Menu lớn 'Sản phẩm' – ảnh phải dưới",
+  "size": "320×262"
+ },
+ {
+  "key": "detail/gallery-1",
+  "area": "Ngoài cấu trúc hiện có",
+  "where": "Trang chi tiết: ảnh sản phẩm 1 (cũng là ảnh thẻ sản phẩm mẫu)",
+  "size": "650×975"
+ },
+ {
+  "key": "detail/gallery-2",
+  "area": "Ngoài cấu trúc hiện có",
+  "where": "Trang chi tiết: ảnh sản phẩm 2",
+  "size": "650×975"
+ },
+ {
+  "key": "detail/description",
+  "area": "Ngoài cấu trúc hiện có",
+  "where": "Trang chi tiết: ảnh khối 'Mô tả sản phẩm'",
+  "size": "862×534"
+ },
+ {
+  "key": "footer/moit-badge",
+  "area": "Ngoài cấu trúc hiện có",
+  "where": "Huy hiệu 'Đã thông báo Bộ Công Thương'",
+  "size": "180×65"
+ },
+ {
+  "key": "Product_Catalog/0.San_pham",
+  "area": "Trang danh mục sản phẩm",
+  "where": "Banner trang /san-pham ('Banner Sản phẩm')",
+  "size": "1729×615"
+ },
+ {
+  "key": "Product_Catalog/0.New_arrivals",
+  "area": "Trang danh mục sản phẩm",
+  "where": "Banner trang /new-arrivals",
+  "size": "1729×615"
+ },
+ {
+  "key": "Posts/Banner_1",
+  "area": "Bài viết",
+  "where": "Banner bài 'Dịu Em đồng hành cùng 50 sinh viên nữ…' (/bai-viet/hoc-bong-cung-em-vung-buoc)",
+  "size": "1729×615"
+ },
+ {
+  "key": "Posts/Banner_2",
+  "area": "Bài viết",
+  "where": "Banner bài 'Dịu Em đồng hành cùng những người mẹ, người bà… Từ Dũ' (/bai-viet/dong-hanh-benh-vien-tu-du)",
+  "size": "1729×615"
+ },
+ {
+  "key": "Posts/Banner_3",
+  "area": "Bài viết",
+  "where": "Banner bài 'Dịu Em đồng hành cùng nữ sinh dân tộc Thái…' (/bai-viet/nu-sinh-thai-thanh-hoa)",
+  "size": "1729×615"
+ }
 ]

@@ -31,10 +31,10 @@ export function ListenBanner({
         <span aria-hidden="true" className="block h-[5px] w-[438px] max-w-full flex-none bg-line" />
 
         <div className="flex max-w-[1533px] flex-col justify-center gap-2.5">
-          <Heading className="text-[clamp(26px,2.9vw,50px)] leading-[1.24] text-black">
+          <Heading className="text-[clamp(26px,calc(var(--vw)*2.9),50px)] leading-[1.24] text-black">
             <strong className="font-bold">{brand}</strong> <span className="font-normal">{title}</span>
           </Heading>
-          <p className="font-script text-[clamp(16px,1.27vw,22px)] leading-[1.41] text-black">{text}</p>
+          <p className="font-script text-[clamp(16px,calc(var(--vw)*1.27),22px)] leading-[1.41] text-black">{text}</p>
         </div>
 
         <span aria-hidden="true" className="block h-[5px] w-[438px] max-w-full flex-none bg-line" />

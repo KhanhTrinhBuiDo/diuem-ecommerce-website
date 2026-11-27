@@ -19,10 +19,10 @@ export function BrandStory({ kicker, title, paragraphs, image, cta }: Props) {
       <div className="relative min-h-[450px] overflow-hidden rounded-[10px] border border-black">
         <ImageOrPlaceholder src={image} alt={`${kicker} ${title}`} label="Ảnh nền câu chuyện thương hiệu" tone="dark" sizes="(min-width:1024px) 88vw, 100vw" className="absolute inset-0" />
 
-        <div className="relative flex min-h-[450px] flex-col justify-between gap-10 px-6 pb-10 pt-10 lg:flex-row lg:items-end lg:gap-[clamp(40px,33vw,570px)] lg:pb-24 lg:pl-[109px] lg:pr-[108px] lg:pt-[66px]">
+        <div className="relative flex min-h-[450px] flex-col justify-between gap-10 px-6 pb-10 pt-10 lg:flex-row lg:items-end lg:gap-[clamp(40px,calc(var(--vw)*33),570px)] lg:pb-24 lg:pl-[109px] lg:pr-[108px] lg:pt-[66px]">
           <div className="flex w-full max-w-[370px] flex-col gap-2.5 text-white [text-shadow:0_4px_4px_#000]">
-            <p className="font-script text-[clamp(20px,1.45vw,25px)] leading-[1.44]">{kicker}</p>
-            <h2 className="text-[clamp(26px,2.03vw,35px)] font-bold leading-tight">{title}</h2>
+            <p className="font-script text-[clamp(20px,calc(var(--vw)*1.45),25px)] leading-[1.44]">{kicker}</p>
+            <h2 className="text-[clamp(26px,calc(var(--vw)*2.03),35px)] font-bold leading-tight">{title}</h2>
           </div>
 
           <div className="flex w-full max-w-[371px] flex-col items-start gap-10 text-white lg:items-end lg:gap-[125px]">

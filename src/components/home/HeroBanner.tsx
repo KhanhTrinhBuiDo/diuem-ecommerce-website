@@ -57,7 +57,7 @@ export function HeroBanner({ slides, autoPlayMs = 6000 }: Props) {
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
     >
-      <div className="relative h-[clamp(260px,35.6vw,615px)] w-full overflow-hidden">
+      <div className="relative h-[clamp(260px,calc(var(--vw)*35.6),615px)] w-full overflow-hidden">
         {slides.map((s, i) => (
           <div
             key={s.id}
@@ -75,7 +75,7 @@ export function HeroBanner({ slides, autoPlayMs = 6000 }: Props) {
               type="button"
               onClick={() => go(-1)}
               aria-label="Banner trước"
-              className="absolute left-[clamp(8px,5vw,86px)] top-1/2 grid size-11 -translate-y-1/2 place-items-center text-white drop-shadow-[0_4px_20px_#000]"
+              className="absolute left-[clamp(8px,calc(var(--vw)*5),86px)] top-1/2 grid size-11 -translate-y-1/2 place-items-center text-white drop-shadow-[0_4px_20px_#000]"
             >
               <Chevron direction="left" />
             </button>
@@ -83,7 +83,7 @@ export function HeroBanner({ slides, autoPlayMs = 6000 }: Props) {
               type="button"
               onClick={() => go(1)}
               aria-label="Banner sau"
-              className="absolute right-[clamp(8px,6.6vw,114px)] top-1/2 grid size-11 -translate-y-1/2 place-items-center text-white drop-shadow-[0_4px_20px_#000]"
+              className="absolute right-[clamp(8px,calc(var(--vw)*6.6),114px)] top-1/2 grid size-11 -translate-y-1/2 place-items-center text-white drop-shadow-[0_4px_20px_#000]"
             >
               <Chevron direction="right" />
             </button>

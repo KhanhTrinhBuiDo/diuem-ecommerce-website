@@ -27,7 +27,7 @@ export function CatalogPage({ collection, products, crumbs, newProducts }: Props
         slides={[{ id: `banner-${collection.slug}`, image: collection.banner, alt: `Banner ${collection.name}`, label: `Banner ${collection.name} · 1729×615` }]}
       />
       <Breadcrumb items={crumbs} />
-      <h1 className="px-6 py-2.5 text-[clamp(22px,1.85vw,32px)] font-bold leading-tight lg:px-[50px]">{collection.title}</h1>
+      <h1 className="px-6 py-2.5 text-[clamp(22px,calc(var(--vw)*1.85),32px)] font-bold leading-tight lg:px-[50px]">{collection.title}</h1>
 
       <CatalogBrowser products={products} newProducts={newProducts} />
 

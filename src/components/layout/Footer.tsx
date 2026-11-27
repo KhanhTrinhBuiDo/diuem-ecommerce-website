@@ -42,7 +42,7 @@ export function Footer() {
         <div className="flex min-h-[346px] flex-col xl:flex-row xl:items-center xl:justify-between">
           <div className="flex flex-1 flex-col items-start gap-[25px] px-6 py-[50px] xl:px-[100px]">
             <div className="flex max-w-[1026px] flex-col gap-2.5">
-              <h2 className="text-[clamp(20px,1.85vw,32px)] font-medium leading-tight">{footerIntro.title}</h2>
+              <h2 className="text-[clamp(20px,calc(var(--vw)*1.85),32px)] font-medium leading-tight">{footerIntro.title}</h2>
               <p className="text-lg font-light leading-[22px]">{footerIntro.text}</p>
             </div>
 
@@ -74,7 +74,7 @@ export function Footer() {
               <PhoneIcon className="size-14 flex-none text-white xl:size-20" />
               <div className="flex flex-col gap-[5px]">
                 <span className="text-lg font-medium leading-[22px]">Hotline</span>
-                <a href={contact.hotlineHref} className="whitespace-nowrap text-[clamp(20px,5vw,32px)] font-medium leading-10 xl:text-[32px]">
+                <a href={contact.hotlineHref} className="whitespace-nowrap text-[clamp(20px,calc(var(--vw)*5),32px)] font-medium leading-10 xl:text-[32px]">
                   {contact.hotline}
                 </a>
               </div>
@@ -83,7 +83,7 @@ export function Footer() {
               <MailIcon className="h-11 w-14 flex-none text-white xl:h-16 xl:w-20" />
               <div className="flex flex-col gap-[5px]">
                 <span className="text-lg font-medium leading-[22px]">Email</span>
-                <a href={contact.emailHref} className="whitespace-nowrap text-[clamp(20px,5vw,32px)] font-medium leading-10 xl:text-[32px]">
+                <a href={contact.emailHref} className="whitespace-nowrap text-[clamp(20px,calc(var(--vw)*5),32px)] font-medium leading-10 xl:text-[32px]">
                   {contact.email}
                 </a>
               </div>

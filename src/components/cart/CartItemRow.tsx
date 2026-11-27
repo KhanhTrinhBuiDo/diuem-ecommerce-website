@@ -20,7 +20,7 @@ export function CartItemRow({ item }: { item: CartItem }) {
       <div className="flex min-w-0 flex-1 flex-col gap-3">
         <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-3">
           <div className="flex min-w-0 flex-col gap-3">
-            <Link href={item.href} className="text-[clamp(14px,1.04vw,18px)] font-medium leading-tight hover:text-brand">
+            <Link href={item.href} className="text-[clamp(14px,calc(var(--vw)*1.04),18px)] font-medium leading-tight hover:text-brand">
               {item.name}
             </Link>
             <div className="flex flex-wrap items-center gap-2.5">
@@ -40,7 +40,7 @@ export function CartItemRow({ item }: { item: CartItem }) {
             </div>
             {!variantOf(item).available && <p role="status" className="text-sm font-medium text-red-600">Hết hàng – sản phẩm này sẽ không được đặt. Chọn dung tích khác hoặc xóa khỏi giỏ.</p>}
           </div>
-          <p className="text-[clamp(14px,1.04vw,18px)] font-bold">{formatVND(priceOf(item) * item.qty)}</p>
+          <p className="text-[clamp(14px,calc(var(--vw)*1.04),18px)] font-bold">{formatVND(priceOf(item) * item.qty)}</p>
         </div>
         <button type="button" onClick={() => remove(item.key)} className="mt-auto inline-flex w-fit items-center gap-2 text-sm font-light hover:text-brand">
           <TrashIcon className="size-4" /> Xóa

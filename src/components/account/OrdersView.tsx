@@ -31,7 +31,7 @@ function OrderCard({ order }: { order: Order }) {
   }
   return (
     <article className="border border-black py-5">
-      <header className="flex items-center justify-between gap-3 px-5 pb-2.5 text-[clamp(11px,0.75vw,13px)] sm:px-[30px]">
+      <header className="flex items-center justify-between gap-3 px-5 pb-2.5 text-[clamp(11px,calc(var(--vw)*0.75),13px)] sm:px-[30px]">
         <p>
           Mã đơn hàng: <span className="break-all">{order.code}</span>
         </p>
@@ -47,17 +47,17 @@ function OrderCard({ order }: { order: Order }) {
         </ul>
       </div>
       <div className="flex items-center justify-end gap-[30px] px-5 pb-2.5 pt-5 sm:px-[30px]">
-        <span className="text-[clamp(13px,1.04vw,18px)] font-light underline">Thành tiền:</span>
-        <span className="text-[clamp(20px,1.9vw,33px)] font-bold">{formatVND(order.total)}</span>
+        <span className="text-[clamp(13px,calc(var(--vw)*1.04),18px)] font-light underline">Thành tiền:</span>
+        <span className="text-[clamp(20px,calc(var(--vw)*1.9),33px)] font-bold">{formatVND(order.total)}</span>
       </div>
       <div className="flex flex-wrap items-center justify-end gap-3 px-5 py-2.5 sm:gap-[30px] sm:px-[30px]">
-        <button type="button" onClick={rebuy} className="h-[47px] rounded-[5px] bg-black px-8 text-[clamp(14px,1.04vw,18px)] font-bold text-white">
+        <button type="button" onClick={rebuy} className="h-[47px] rounded-[5px] bg-black px-8 text-[clamp(14px,calc(var(--vw)*1.04),18px)] font-bold text-white">
           Mua lại
         </button>
-        <a href={siteConfig.contact.hotlineHref} className="grid h-[42px] place-items-center rounded-[5px] border-2 border-black px-6 text-[clamp(13px,1.04vw,18px)] font-light">
+        <a href={siteConfig.contact.hotlineHref} className="grid h-[42px] place-items-center rounded-[5px] border-2 border-black px-6 text-[clamp(13px,calc(var(--vw)*1.04),18px)] font-light">
           Liên hệ đổi hàng
         </a>
-        <Link href={`/tai-khoan/don-hang/${order.id}`} className="grid h-[42px] place-items-center rounded-[5px] border-2 border-black px-8 text-[clamp(13px,1.04vw,18px)] font-light">
+        <Link href={`/tai-khoan/don-hang/${order.id}`} className="grid h-[42px] place-items-center rounded-[5px] border-2 border-black px-8 text-[clamp(13px,calc(var(--vw)*1.04),18px)] font-light">
           Chi tiết
         </Link>
       </div>
@@ -80,14 +80,14 @@ export function OrdersView({ orders, signedIn }: { orders: Order[]; signedIn: bo
             role="tab"
             aria-selected={tab === t.key}
             onClick={() => setTab(t.key)}
-            className={`border-b-[3px] py-2 text-[clamp(14px,1.27vw,22px)] ${tab === t.key ? "border-black" : "border-transparent"}`}
+            className={`border-b-[3px] py-2 text-[clamp(14px,calc(var(--vw)*1.27),22px)] ${tab === t.key ? "border-black" : "border-transparent"}`}
           >
             {t.label}
           </button>
         ))}
       </div>
       {list.length === 0 ? (
-        <p className="py-12 text-center text-[clamp(14px,1.04vw,18px)] font-light">Chưa có đơn hàng nào ở mục này.</p>
+        <p className="py-12 text-center text-[clamp(14px,calc(var(--vw)*1.04),18px)] font-light">Chưa có đơn hàng nào ở mục này.</p>
       ) : (
         <ul className="flex flex-col gap-6">
           {list.map((o) => (

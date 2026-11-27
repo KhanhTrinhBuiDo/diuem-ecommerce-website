@@ -41,10 +41,10 @@ export function OrderLookup() {
     setError("");
   }
 
-  const inp = "h-[62px] w-full rounded-full border border-black bg-white px-6 text-[clamp(14px,1.04vw,18px)] font-extralight placeholder:text-black/70 sm:pl-[50px]";
+  const inp = "h-[62px] w-full rounded-full border border-black bg-white px-6 text-[clamp(14px,calc(var(--vw)*1.04),18px)] font-extralight placeholder:text-black/70 sm:pl-[50px]";
   return (
     <div className="mx-auto w-full max-w-[1728px] px-6 pb-16 lg:px-[100px]">
-      <h1 className="-rotate-[0.26deg] pt-10 text-[clamp(28px,2.55vw,44px)] font-bold leading-tight lg:pt-[50px]">Tra cứu đơn hàng</h1>
+      <h1 className="-rotate-[0.26deg] pt-10 text-[clamp(28px,calc(var(--vw)*2.55),44px)] font-bold leading-tight lg:pt-[50px]">Tra cứu đơn hàng</h1>
       <div aria-hidden="true" className="mt-5 h-[10px] bg-line" />
 
       <form onSubmit={submit} noValidate className="mx-auto max-w-[1429px] pt-8">
@@ -64,10 +64,10 @@ export function OrderLookup() {
           </p>
         )}
         <div className="flex flex-col justify-end gap-4 pt-6 sm:flex-row sm:gap-[30px]">
-          <button type="submit" disabled={busy} className="h-[59px] rounded-full bg-black px-[100px] text-[clamp(16px,1.27vw,22px)] font-bold text-white max-sm:px-6">
+          <button type="submit" disabled={busy} className="h-[59px] rounded-full bg-black px-[100px] text-[clamp(16px,calc(var(--vw)*1.27),22px)] font-bold text-white max-sm:px-6">
             {busy ? "Đang tra cứu…" : "Tra cứu"}
           </button>
-          <button type="button" onClick={reset} className="h-[59px] rounded-full bg-black px-[100px] text-[clamp(16px,1.27vw,22px)] font-bold text-white max-sm:px-6">
+          <button type="button" onClick={reset} className="h-[59px] rounded-full bg-black px-[100px] text-[clamp(16px,calc(var(--vw)*1.27),22px)] font-bold text-white max-sm:px-6">
             Làm mới
           </button>
         </div>

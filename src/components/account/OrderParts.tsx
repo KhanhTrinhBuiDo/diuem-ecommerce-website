@@ -10,16 +10,16 @@ export function OrderItemLine({ item, badge }: { item: OrderItem; badge?: string
       <ImageOrPlaceholder src={item.image} alt={item.name} label="Ảnh" sizes="120px" className="size-[84px] flex-none sm:size-[120px]" />
       <div className="flex min-w-0 flex-1 flex-col gap-2.5">
         <div className="flex items-start justify-between gap-3">
-          <Link href={item.href} className="text-[clamp(15px,1.27vw,22px)] leading-tight hover:text-brand">
+          <Link href={item.href} className="text-[clamp(15px,calc(var(--vw)*1.27),22px)] leading-tight hover:text-brand">
             {item.name}
           </Link>
-          {badge && <span className="flex-none rounded-[5px] bg-black px-2.5 py-1 text-[clamp(12px,1.04vw,18px)] text-white">{badge}</span>}
+          {badge && <span className="flex-none rounded-[5px] bg-black px-2.5 py-1 text-[clamp(12px,calc(var(--vw)*1.04),18px)] text-white">{badge}</span>}
         </div>
-        <div className="flex items-start justify-between gap-3 text-[clamp(13px,1.04vw,18px)]">
+        <div className="flex items-start justify-between gap-3 text-[clamp(13px,calc(var(--vw)*1.04),18px)]">
           <span className="font-extralight">{item.variant}</span>
           <span className="font-medium">{formatVND(item.price)}</span>
         </div>
-        <span className="text-[clamp(13px,1.04vw,18px)] font-extralight">x {item.qty}</span>
+        <span className="text-[clamp(13px,calc(var(--vw)*1.04),18px)] font-extralight">x {item.qty}</span>
       </div>
     </div>
   );
@@ -49,8 +49,8 @@ export function OrderTimeline({ steps }: { steps: OrderStep[] }) {
                 <path d={ICONS[s.key]} />
               </svg>
             </span>
-            <span className="mt-1 text-[clamp(11px,1.04vw,16px)] leading-tight">{s.label}</span>
-            <span className="text-[clamp(10px,0.75vw,13px)] font-light">{s.time ?? "—"}</span>
+            <span className="mt-1 text-[clamp(11px,calc(var(--vw)*1.04),16px)] leading-tight">{s.label}</span>
+            <span className="text-[clamp(10px,calc(var(--vw)*0.75),13px)] font-light">{s.time ?? "—"}</span>
           </li>
         );
       })}

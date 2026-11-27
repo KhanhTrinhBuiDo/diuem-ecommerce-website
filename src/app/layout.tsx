@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Momo+Signature&display=swap" rel="stylesheet" />
       </head>
-      <body className="flex min-h-screen flex-col font-sans antialiased">
+      <body className="flex min-h-[calc(var(--vh)*100)] flex-col font-sans antialiased">
         {children}
       </body>
     </html>

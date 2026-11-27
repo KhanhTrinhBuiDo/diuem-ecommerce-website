@@ -19,7 +19,7 @@ export function ShippingForm({ errors, defaults }: { errors: ShippingErrors; def
   return (
     <section aria-labelledby="ship" className="flex flex-col gap-[25px] px-6 pb-10 pt-[50px] lg:pl-[100px] lg:pr-2.5">
       <div className="flex flex-col gap-[25px]">
-        <h2 id="ship" className="text-[clamp(22px,1.85vw,32px)] font-bold leading-tight">
+        <h2 id="ship" className="text-[clamp(22px,calc(var(--vw)*1.85),32px)] font-bold leading-tight">
           Thông tin vận chuyển
         </h2>
         <label className="flex items-center gap-2.5 text-[10px] font-extralight leading-3">

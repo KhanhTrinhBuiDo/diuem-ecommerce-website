@@ -1,3 +1,4 @@
+
 /**
  * Cấu hình tập trung cho site: menu, link footer, liên hệ, mạng xã hội.
  * Sửa nội dung ở đây thay vì sửa trong component.
@@ -37,8 +38,8 @@ export const siteConfig = {
 export const mainNav: NavLink[] = [
   { label: "NEW ARRIVALS", href: "/new-arrivals", ready: true },
   { label: "SẢN PHẨM", href: "/san-pham", ready: true },
-  { label: "VỀ DỊU EM", href: "/ve-diu-em", ready: false },
-  { label: "BÀI VIẾT", href: "/bai-viet", ready: false },
+  { label: "VỀ DỊU EM", href: "/ve-diu-em", ready: true },
+  { label: "BÀI VIẾT", href: "/bai-viet", ready: true },
 ];
 
 /** Các link tiện ích trên header (tìm kiếm / tài khoản / giỏ hàng) */
@@ -61,9 +62,9 @@ export const footerGroups: LinkGroup[] = [
   {
     title: "Về Dịu Em",
     links: [
-      { label: "Câu chuyện thương hiệu", href: "/ve-diu-em", ready: false },
+      { label: "Câu chuyện thương hiệu", href: "/ve-diu-em", ready: true },
       { label: "Chất liệu", href: "/chat-lieu", ready: false },
-      { label: "Blog", href: "/bai-viet", ready: false },
+      { label: "Blog", href: "/bai-viet", ready: true },
     ],
   },
   {
@@ -96,13 +97,13 @@ export const policyGroup: LinkGroup = {
 };
 
 /**
- * Trang đích của các khối trên trang chủ (chưa xây).
+ * Trang đích của các khối trên trang chủ (trỏ tới danh mục thật).
  * TODO(catalog): khi có database, các trang này có thể gộp thành /san-pham/[danh-muc].
  */
 export const homeSectionLinks = {
-  bestSellers: { label: "Bán chạy nhất", href: "/san-pham/ban-chay-nhat", ready: true },
-  gifts: { label: "Quà tặng người thương", href: "/san-pham/qua-tang-nguoi-thuong", ready: true },
-  combos: { label: "Combo tặng người thương", href: "/san-pham/combo-tang-nguoi-thuong", ready: true },
+  bestSellers: { label: "Bán chạy nhất", href: "/san-pham", ready: true },
+  gifts: { label: "Quà tặng người thương", href: "/san-pham/bo-qua-tang", ready: true },
+  combos: { label: "Combo tặng người thương", href: "/san-pham/bo-qua-tang", ready: true },
 } satisfies Record<string, NavLink>;
 
 /** Mạng xã hội. TODO: thay "#" bằng URL thật khi có. */
@@ -135,3 +136,4 @@ export const PLACEHOLDER_PAGES: NavLink[] = (() => {
     return true;
   });
 })();
+

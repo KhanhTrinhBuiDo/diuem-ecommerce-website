@@ -22,7 +22,7 @@ export async function Header() {
   const menuProducts = (fresh.length ? fresh : cat.products).slice(0, 4).map(toCard);
   return (
     <header className="relative w-full bg-white">
-      <div className="flex items-center justify-between gap-4 px-4 py-4 lg:justify-center lg:gap-[clamp(40px,8.7vw,150px)] lg:px-0 lg:py-[50px]">
+      <div className="flex items-center justify-between gap-4 px-4 py-4 lg:justify-center lg:gap-[clamp(40px,calc(var(--vw)*8.7),150px)] lg:px-0 lg:py-[50px]">
         {/* Logo */}
         <Link href="/" aria-label={`${siteConfig.name} – Trang chủ`} className="flex flex-none flex-col items-center justify-center gap-[5px]">
           <LogoMark className="h-[52px] w-[58px] lg:h-[78px] lg:w-[88px]" />

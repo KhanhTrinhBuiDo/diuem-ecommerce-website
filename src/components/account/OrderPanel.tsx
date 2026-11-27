@@ -43,7 +43,7 @@ export function OrderPanel({ order, back }: { order: Order; back: { label: strin
 
   return (
     <div className="overflow-hidden bg-white shadow-[0_4px_30px_rgba(0,0,0,0.25)]">
-      <div className="flex flex-wrap items-center justify-between gap-x-10 gap-y-3 px-5 pt-8 text-[clamp(14px,1.27vw,22px)] font-light sm:px-[50px]">
+      <div className="flex flex-wrap items-center justify-between gap-x-10 gap-y-3 px-5 pt-8 text-[clamp(14px,calc(var(--vw)*1.27),22px)] font-light sm:px-[50px]">
         {back.href ? (
           <Link href={back.href} className="flex items-center gap-5">
             {backContent}
@@ -68,7 +68,7 @@ export function OrderPanel({ order, back }: { order: Order; back: { label: strin
 
       <section className="bg-[#fffdf7]">
         <div className="flex flex-col gap-6 px-5 pb-12 pt-8 sm:px-[50px] md:flex-row md:justify-between">
-          <p className="text-[clamp(11px,0.75vw,13px)] font-light">
+          <p className="text-[clamp(11px,calc(var(--vw)*0.75),13px)] font-light">
             {completed
               ? order.returnDeadline
                 ? `Nếu hàng nhận được có vấn đề, bạn có thể yêu cầu Trả hàng/Hoàn tiền trước ${order.returnDeadline}`
@@ -82,14 +82,14 @@ export function OrderPanel({ order, back }: { order: Order; back: { label: strin
               disabled={!completed || !order.items.some((i) => i.itemId)}
               title={completed && !order.items.some((i) => i.itemId) ? "Đăng nhập để đánh giá" : undefined}
               onClick={() => setReviewOpen(true)}
-              className="h-[42px] rounded-[5px] border-2 border-black bg-line text-[clamp(14px,1.04vw,18px)] font-bold text-white [text-shadow:0_4px_10px_rgba(0,0,0,0.5)] disabled:cursor-not-allowed disabled:opacity-40"
+              className="h-[42px] rounded-[5px] border-2 border-black bg-line text-[clamp(14px,calc(var(--vw)*1.04),18px)] font-bold text-white [text-shadow:0_4px_10px_rgba(0,0,0,0.5)] disabled:cursor-not-allowed disabled:opacity-40"
             >
               Đánh giá
             </button>
-            <a href={siteConfig.contact.hotlineHref} className="grid h-[42px] place-items-center rounded-[5px] border-2 border-black text-[clamp(14px,1.04vw,18px)]">
+            <a href={siteConfig.contact.hotlineHref} className="grid h-[42px] place-items-center rounded-[5px] border-2 border-black text-[clamp(14px,calc(var(--vw)*1.04),18px)]">
               Liên hệ Đổi trả
             </a>
-            <button type="button" onClick={rebuy} className="h-[42px] rounded-[5px] border-2 border-black text-[clamp(14px,1.04vw,18px)]">
+            <button type="button" onClick={rebuy} className="h-[42px] rounded-[5px] border-2 border-black text-[clamp(14px,calc(var(--vw)*1.04),18px)]">
               Mua lại
             </button>
           </div>
@@ -102,12 +102,12 @@ export function OrderPanel({ order, back }: { order: Order; back: { label: strin
         <MailStripe />
         <div className="flex flex-col justify-between gap-6 px-5 py-8 sm:px-[50px] md:flex-row">
           <div className="flex flex-col gap-[15px]">
-            <h2 className="mb-2 text-[clamp(20px,1.85vw,32px)]">Địa Chỉ Nhận Hàng</h2>
-            <p className="text-[clamp(17px,1.62vw,28px)]">{order.address.name}</p>
-            <p className="text-[clamp(13px,1.04vw,18px)] font-light">{order.address.phone}</p>
-            <p className="text-[clamp(13px,1.04vw,18px)] font-light">{order.address.line}</p>
+            <h2 className="mb-2 text-[clamp(20px,calc(var(--vw)*1.85),32px)]">Địa Chỉ Nhận Hàng</h2>
+            <p className="text-[clamp(17px,calc(var(--vw)*1.62),28px)]">{order.address.name}</p>
+            <p className="text-[clamp(13px,calc(var(--vw)*1.04),18px)] font-light">{order.address.phone}</p>
+            <p className="text-[clamp(13px,calc(var(--vw)*1.04),18px)] font-light">{order.address.line}</p>
           </div>
-          <div className="text-[clamp(12px,1.04vw,18px)] font-light text-black/50 md:text-right">
+          <div className="text-[clamp(12px,calc(var(--vw)*1.04),18px)] font-light text-black/50 md:text-right">
             <p>{order.paymentLabel}</p>
             <p>{order.carrier}</p>
             <p className="break-all">{order.trackingCode}</p>
@@ -125,7 +125,7 @@ export function OrderPanel({ order, back }: { order: Order; back: { label: strin
             ))}
           </ul>
         </div>
-        <dl className="ml-auto mt-10 grid max-w-[560px] grid-cols-[1fr_auto] text-[clamp(13px,1.04vw,18px)]">
+        <dl className="ml-auto mt-10 grid max-w-[560px] grid-cols-[1fr_auto] text-[clamp(13px,calc(var(--vw)*1.04),18px)]">
           {[
             ["Tạm tính", formatVND(order.subtotal)],
             ["Voucher ưu đãi", formatVND(order.voucher)],
@@ -138,7 +138,7 @@ export function OrderPanel({ order, back }: { order: Order; back: { label: strin
           ))}
           <div className="col-span-2 grid grid-cols-subgrid items-center py-4">
             <dt className="font-light">Thành tiền</dt>
-            <dd className="text-right text-[clamp(20px,1.85vw,32px)] font-bold">{formatVND(order.total)}</dd>
+            <dd className="text-right text-[clamp(20px,calc(var(--vw)*1.85),32px)] font-bold">{formatVND(order.total)}</dd>
           </div>
         </dl>
       </div>

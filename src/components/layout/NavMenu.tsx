@@ -8,7 +8,7 @@ import type { Product } from "@/components/home/ProductCard";
 import { megaMenu } from "@/data/menu";
 import type { NavLink } from "@/config/site";
 
-const link = "whitespace-nowrap text-center text-[clamp(14px,1.27vw,22px)] font-normal leading-[1.23] text-black transition-colors hover:text-brand";
+const link = "whitespace-nowrap text-center text-[clamp(14px,calc(var(--vw)*1.27),22px)] font-normal leading-[1.23] text-black transition-colors hover:text-brand";
 
 function Chevron({ className = "" }: { className?: string }) {
   return (
@@ -49,7 +49,7 @@ export function NavMenu({ items, newProducts }: { items: NavLink[]; newProducts:
   const keyOf = (href: string): Key | null => (href === "/san-pham" ? "products" : href === "/new-arrivals" ? "new" : null);
 
   return (
-    <nav aria-label="Menu chính" className="hidden items-center gap-[clamp(20px,2.9vw,50px)] lg:flex">
+    <nav aria-label="Menu chính" className="hidden items-center gap-[clamp(20px,calc(var(--vw)*2.9),50px)] lg:flex">
       {items.map((item) => {
         const k = keyOf(item.href);
         if (!k) {
@@ -89,20 +89,20 @@ export function NavMenu({ items, newProducts }: { items: NavLink[]; newProducts:
 
 function GroupsView() {
   return (
-    <div className="flex gap-[50px] p-[clamp(24px,2.1vw,36px)] pb-8">
+    <div className="flex gap-[50px] p-[clamp(24px,calc(var(--vw)*2.1),36px)] pb-8">
       <div className="flex min-w-0 flex-1 flex-col gap-[50px]">
         {megaMenu.rows.map((row, i) => (
           <div key={i} className="grid grid-cols-3 gap-[50px]">
             {row.map((g) => (
               <div key={g.label} className="flex flex-col gap-5">
-                <Link href={g.href} className="flex items-center gap-4 text-[clamp(16px,1.27vw,22px)] font-bold leading-[27px] hover:text-brand">
+                <Link href={g.href} className="flex items-center gap-4 text-[clamp(16px,calc(var(--vw)*1.27),22px)] font-bold leading-[27px] hover:text-brand">
                   {g.label}
                   <Chevron />
                 </Link>
                 <ul className="flex flex-col gap-[15px]">
                   {g.items.map((it) => (
                     <li key={it.label}>
-                      <Link href={it.href} className="text-[clamp(14px,1.04vw,18px)] font-light leading-[22px] hover:text-brand">
+                      <Link href={it.href} className="text-[clamp(14px,calc(var(--vw)*1.04),18px)] font-light leading-[22px] hover:text-brand">
                         {it.label}
                       </Link>
                     </li>
@@ -112,7 +112,7 @@ function GroupsView() {
             ))}
           </div>
         ))}
-        <Link href={megaMenu.viewAll.href} className="self-start text-[clamp(16px,1.27vw,22px)] font-bold text-line underline">
+        <Link href={megaMenu.viewAll.href} className="self-start text-[clamp(16px,calc(var(--vw)*1.27),22px)] font-bold text-line underline">
           {megaMenu.viewAll.label}
         </Link>
       </div>
@@ -126,17 +126,17 @@ function GroupsView() {
 
 function NewArrivalsView({ href, products, onNavigate }: { href: string; products: Product[]; onNavigate: () => void }) {
   return (
-    <div className="p-[clamp(24px,2.1vw,36px)]">
-      <Link href={href} onClick={onNavigate} className="mb-5 inline-flex items-center gap-4 text-[clamp(16px,1.27vw,22px)] font-bold leading-[27px] hover:text-brand">
+    <div className="p-[clamp(24px,calc(var(--vw)*2.1),36px)]">
+      <Link href={href} onClick={onNavigate} className="mb-5 inline-flex items-center gap-4 text-[clamp(16px,calc(var(--vw)*1.27),22px)] font-bold leading-[27px] hover:text-brand">
         XEM TẤT CẢ SẢN PHẨM MỚI
         <Chevron />
       </Link>
-      <ul className="grid grid-cols-4 gap-[clamp(16px,2vw,34px)]">
+      <ul className="grid grid-cols-4 gap-[clamp(16px,calc(var(--vw)*2),34px)]">
         {products.map((p) => (
           <li key={p.id}>
             <Link href={p.href} onClick={onNavigate} className="group flex flex-col gap-[30px]">
               <ImageOrPlaceholder src={p.image} alt={p.name} label="Ảnh sản phẩm" sizes="303px" className="aspect-[303/450] rounded-[20px]" />
-              <span className="text-[clamp(14px,1.16vw,20px)] font-extralight uppercase leading-[25px] group-hover:text-brand">{p.name}</span>
+              <span className="text-[clamp(14px,calc(var(--vw)*1.16),20px)] font-extralight uppercase leading-[25px] group-hover:text-brand">{p.name}</span>
             </Link>
           </li>
         ))}

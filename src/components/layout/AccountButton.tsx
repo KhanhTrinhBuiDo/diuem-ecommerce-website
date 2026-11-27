@@ -39,7 +39,7 @@ export function AccountButton() {
     };
   }, [open]);
 
-  const row = "block py-1 text-[clamp(15px,1.04vw,18px)] font-light leading-[22px] hover:text-brand";
+  const row = "block py-1 text-[clamp(15px,calc(var(--vw)*1.04),18px)] font-light leading-[22px] hover:text-brand";
   const rule = <span aria-hidden="true" className="block h-1 bg-line" />;
   return (
     <div ref={ref} className="relative" onMouseEnter={enter} onMouseLeave={leave}>
@@ -48,7 +48,7 @@ export function AccountButton() {
       </button>
       {open && (
         <div className="absolute right-0 top-full z-50 pt-2">
-          <div className="relative w-[min(340px,calc(100vw-32px))] rounded-[20px] bg-white px-[33px] py-8 shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
+          <div className="relative w-[min(340px,calc(var(--vw)*100_-_32px))] rounded-[20px] bg-white px-[33px] py-8 shadow-[0_4px_20px_rgba(0,0,0,0.25)]">
             <span aria-hidden="true" className="absolute -top-2 right-[18px] size-5 rotate-45 bg-white" />
             <div role="menu" className="relative flex flex-col gap-2.5">
               {adminHref && (
