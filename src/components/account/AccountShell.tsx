@@ -7,6 +7,7 @@ export const accountNav = [
   { key: "ho-so", label: "Hồ sơ thông tin", href: "/tai-khoan/ho-so" },
   { key: "lich-su", label: "Lịch sử mua hàng", href: "/tai-khoan/lich-su-mua-hang" },
   { key: "dia-chi", label: "Sổ địa chỉ", href: "/tai-khoan/so-dia-chi" },
+  { key: "voucher", label: "Voucher của tôi", href: "/tai-khoan/voucher" },
   { key: "danh-gia", label: "Đánh giá và phản hồi", href: "/tai-khoan/danh-gia" },
   // TODO(figma): 4 trang đầu ghi "Chính sách chúng tôi", trang FAQ ghi "Câu hỏi thường gặp" → đang dùng tên của trang FAQ.
   { key: "faq", label: "Câu hỏi thường gặp", href: "/tai-khoan/cau-hoi-thuong-gap" },

@@ -65,11 +65,14 @@ export async function listCoupons(): Promise<CouponRow[]> {
   const sb = await createClient();
   const { data, error } = await sb.from("coupons").select("*").order("code");
   if (error) throw new Error(error.message);
-  const day = (s: string | null) => (s ? s.slice(0, 10) : "");
+  // Ngày theo giờ Việt Nam (DB lưu timestamptz UTC)
+  const day = (s: string | null) => (s ? new Date(new Date(s).getTime() + 7 * 3600_000).toISOString().slice(0, 10) : "");
   return (data ?? []).map((c) => ({
     id: c.code, code: c.code, discount_type: c.discount_type, discount_value: Number(c.discount_value), min_order_vnd: Number(c.min_order_vnd),
     starts_at: day(c.starts_at), ends_at: day(c.ends_at), is_active: c.is_active,
     max_uses: Number(c.max_uses ?? 0), max_discount_vnd: Number(c.max_discount_vnd ?? 0), used_count: Number(c.used_count ?? 0),
+    title: c.title ?? "", description: c.description ?? "", auto_apply: Boolean(c.auto_apply), per_account_grant: Number(c.per_account_grant ?? 0),
+    min_qty: Number(c.min_qty ?? 0), min_completed_orders: Number(c.min_completed_orders ?? 0), new_customer_only: Boolean(c.new_customer_only),
   }));
 }
 

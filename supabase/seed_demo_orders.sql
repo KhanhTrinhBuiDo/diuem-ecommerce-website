@@ -1,5 +1,5 @@
 -- =====================================================================================
--- DỮ LIỆU DEMO: 5 khách có tài khoản (1–3 đơn) + 2 khách vãng lai (1–2 đơn). Chỉ để xem thử giao diện admin / tài khoản.
+-- DỮ LIỆU DEMO: 5 khách có tài khoản (1–3 đơn) + 1 khách thân thiết (10 đơn hoàn tất, cách đều 28 ngày) + 2 khách vãng lai (1–2 đơn). Chỉ để xem thử giao diện admin / tài khoản.
 -- Chạy trong Supabase SQL Editor SAU KHI đã chạy migration v07→v12 và đã có sản phẩm thật.
 -- Mọi thông tin cần chỉnh nằm ở HAI khối VALUES ngay bên dưới (khách hàng, đơn hàng). Không đụng tới tồn kho.
 -- Xóa sạch dữ liệu demo: chạy supabase/seed_demo_cleanup.sql
@@ -24,7 +24,9 @@ select * from (values
   ('c2', 'Trần Minh Anh',    '0900000002', 'c2@demo.diuem.test', 'Nữ',  'Hà Nội',          'Phường Dịch Vọng', '25 Trần Thái Tông'),
   ('c3', 'Lê Phương Linh',   '0900000003', 'c3@demo.diuem.test', 'Nữ',  'Cần Thơ',         'Phường Xuân Khánh','8 Nguyễn Văn Cừ'),
   ('c4', 'Phạm Ngọc Mai',    '0900000004', 'c4@demo.diuem.test', 'Nữ',  'Đà Nẵng',         'Phường Hải Châu 1','40 Bạch Đằng'),
-  ('c5', 'Võ Khánh Vy',      '0900000005', 'c5@demo.diuem.test', 'Nữ',  'TP. Hồ Chí Minh', 'Phường Tân Định',  '77 Hai Bà Trưng')
+  ('c5', 'Võ Khánh Vy',      '0900000005', 'c5@demo.diuem.test', 'Nữ',  'TP. Hồ Chí Minh', 'Phường Tân Định',  '77 Hai Bà Trưng'),
+  -- c6 = KHÁCH THÂN THIẾT: đủ 10 đơn đã hoàn tất, cách đều nhau 28 ngày (dùng để thử voucher THANTHIET)
+  ('c6', 'Nguyễn Hoài An',   '0900000006', 'c6@demo.diuem.test', 'Nữ',  'TP. Hồ Chí Minh', 'Phường Thảo Điền', '18 Xuân Thủy')
 ) as t(key, full_name, phone, email, gender, province, ward, street);
 
 -- ---------- KHỐI 2: ĐƠN HÀNG ----------
@@ -44,6 +46,16 @@ select * from (values
   ('c4', timestamptz '2026-11-09 15:40:26+07', 'confirmed', 'cod',           '4:1',     null, null, null, null, null, null, null),
   ('c4', timestamptz '2026-11-22 10:05:14+07', 'pending',   'cod',           '6:2',     null, null, null, null, null, null, null),
   ('c5', timestamptz '2026-11-18 19:26:39+07', 'completed', 'cod',           '1:1',     null, null, null, null, null, null, null),
+  ('c6', timestamptz '2026-03-04 10:17:31+07', 'completed', 'bank_transfer', '1:1,3:1', null, null, null, null, null, null, 'Khách thân thiết'),
+  ('c6', timestamptz '2026-04-01 14:42:08+07', 'completed', 'cod', '2:1', null, null, null, null, null, null, null),
+  ('c6', timestamptz '2026-04-29 09:05:47+07', 'completed', 'cod', '4:2', null, null, null, null, null, null, null),
+  ('c6', timestamptz '2026-05-27 19:33:12+07', 'completed', 'bank_transfer', '6:1,1:1', null, null, null, null, null, null, null),
+  ('c6', timestamptz '2026-06-24 11:28:50+07', 'completed', 'cod', '5:1', null, null, null, null, null, null, null),
+  ('c6', timestamptz '2026-07-22 16:11:26+07', 'completed', 'cod', '7:1,2:1', null, null, null, null, null, null, null),
+  ('c6', timestamptz '2026-08-19 08:54:03+07', 'completed', 'bank_transfer', '3:2', null, null, null, null, null, null, null),
+  ('c6', timestamptz '2026-09-16 20:19:44+07', 'completed', 'cod', '9:1', null, null, null, null, null, null, null),
+  ('c6', timestamptz '2026-10-14 13:07:35+07', 'completed', 'cod', '8:1,4:1', null, null, null, null, null, null, null),
+  ('c6', timestamptz '2026-11-11 17:46:58+07', 'completed', 'bank_transfer', '10:1,5:1', null, null, null, null, null, null, null),
   -- khách vãng lai 1 (2 đơn): cust = null
   (null, timestamptz '2026-10-15 16:33:21+07', 'completed', 'cod',          '3:1',     'Đặng Thị Lan', '0900000101', 'g1@demo.diuem.test', 'TP. Hồ Chí Minh', 'Phường Võ Thị Sáu', '3 Nguyễn Thị Minh Khai', null),
   (null, timestamptz '2026-11-05 12:11:09+07', 'shipping',  'cod',          '5:2',     'Đặng Thị Lan', '0900000101', 'g1@demo.diuem.test', 'TP. Hồ Chí Minh', 'Phường Võ Thị Sáu', '3 Nguyễn Thị Minh Khai', null),
@@ -58,21 +70,22 @@ select full_name, phone, email::citext, gender from _demo_customers;
 do $$
 declare
   r record; l text; o public.orders; pv record; n int;
-  v_sub bigint; v_fee bigint; v_cust public.customers; c record;
+  v_sub bigint; v_fee bigint; v_qty int; v_cust public.customers; c record;
 begin
   select count(*) into n from public.product_variants where is_active and stock_qty > 0;
   if n = 0 then raise exception 'Chưa có biến thể sản phẩm nào đang bán/còn hàng — hãy nhập sản phẩm trước.'; end if;
 
   for r in select * from _demo_orders order by placed_at loop
     select * into c from _demo_customers where key = r.cust;
-    v_sub := 0;
+    v_sub := 0; v_qty := 0;
     -- tính tạm tiền hàng
     for l in select unnest(string_to_array(r.lines, ',')) loop
       select * into pv from (select x.*, row_number() over (order by x.sku) rn from public.product_variants x where x.is_active and x.stock_qty > 0) q
         where rn = ((split_part(l, ':', 1)::int - 1) % n) + 1;
       v_sub := v_sub + pv.price_vnd * split_part(l, ':', 2)::int;
+      v_qty := v_qty + split_part(l, ':', 2)::int;
     end loop;
-    v_fee := public.shipping_fee_vnd(v_sub);
+    v_fee := case when v_qty >= 2 then 0::bigint else public.shipping_fee_vnd(v_sub) end;   -- khớp quy tắc v13: từ 2 món miễn phí ship
 
     select * into v_cust from public.customers where email::text = c.email;
     insert into public.orders (customer_id, contact_name, contact_phone, contact_email, ship_name, ship_phone, ship_province, ship_ward, ship_street,

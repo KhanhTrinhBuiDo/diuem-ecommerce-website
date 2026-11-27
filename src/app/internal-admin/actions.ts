@@ -134,8 +134,10 @@ export async function saveCoupon(c: CouponRow, isNew: boolean): Promise<ActionRe
   const err = validateCoupon({ ...c, code });
   if (err) return fail(err);
   const sb = await createClient();
-  const row = { discount_type: c.discount_type, discount_value: c.discount_value, min_order_vnd: c.min_order_vnd, starts_at: c.starts_at || null, ends_at: c.ends_at ? `${c.ends_at}T23:59:59+07:00` : null, is_active: c.is_active,
-    max_uses: c.max_uses > 0 ? c.max_uses : null, max_discount_vnd: c.max_discount_vnd > 0 ? c.max_discount_vnd : null };
+  const row = { discount_type: c.discount_type, discount_value: c.discount_value, min_order_vnd: c.min_order_vnd, starts_at: c.starts_at ? `${c.starts_at}T00:00:00+07:00` : null, ends_at: c.ends_at ? `${c.ends_at}T23:59:59+07:00` : null, is_active: c.is_active,
+    max_uses: c.max_uses > 0 ? c.max_uses : null, max_discount_vnd: c.max_discount_vnd > 0 ? c.max_discount_vnd : null,
+    title: c.title.trim() || null, description: c.description.trim() || null, auto_apply: c.auto_apply, per_account_grant: c.per_account_grant > 0 ? c.per_account_grant : null,
+    min_qty: c.min_qty, min_completed_orders: c.min_completed_orders, new_customer_only: c.new_customer_only };
   const { error } = isNew ? await sb.from("coupons").insert({ code, ...row }) : await sb.from("coupons").update(row).eq("code", c.id);
   return error ? fail(dbError(error)) : { ok: true };
 }

@@ -1,7 +1,7 @@
 "use server";
 
 import { getCatalog, hrefOf, toCard } from "@/lib/storefront";
-import type { CartLine, CartProductInfo, CouponQuote, PlaceOrderInput, PlaceOrderResult } from "@/lib/checkout";
+import type { CartLine, CartProductInfo, CouponQuote, MyVoucher, PlaceOrderInput, PlaceOrderResult } from "@/lib/checkout";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
@@ -29,13 +29,13 @@ async function myCustomerId(sb: Awaited<ReturnType<typeof createClient>>): Promi
 }
 
 /** Xem trước mức giảm của mã ưu đãi (chỉ để hiển thị; `place_order` kiểm tra và tính lại khi đặt hàng). */
-export async function quoteCoupon(code: string, subtotal: number): Promise<CouponQuote> {
+export async function quoteCoupon(code: string, subtotal: number, qty = 0): Promise<CouponQuote> {
   const c = String(code ?? "").trim();
   if (!c) return { ok: false, message: "Vui lòng nhập mã ưu đãi." };
   if (!isSupabaseConfigured()) return { ok: false, message: "Chưa kết nối hệ thống, chưa thể áp dụng mã." };
   try {
     const sb = await createClient();
-    const { data, error } = await sb.rpc("quote_coupon", { p_code: c.slice(0, 40), p_subtotal: Math.max(0, Math.trunc(subtotal) || 0) });
+    const { data, error } = await sb.rpc("quote_coupon", { p_code: c.slice(0, 40), p_subtotal: Math.max(0, Math.trunc(subtotal) || 0), p_qty: Math.max(0, Math.trunc(qty) || 0) });
     if (error) throw new Error(error.message);
     const r = data as { ok?: boolean; code?: string; discount?: number; message?: string } | null;
     if (r?.ok) return { ok: true, code: String(r.code), discount: Number(r.discount) };
@@ -43,6 +43,24 @@ export async function quoteCoupon(code: string, subtotal: number): Promise<Coupo
   } catch (e) {
     console.error("[cart] quoteCoupon:", e);
     return { ok: false, message: "Không kiểm tra được mã lúc này. Vui lòng thử lại." };
+  }
+}
+
+/** Voucher cấp riêng của tài khoản đang đăng nhập (chưa đăng nhập → danh sách rỗng). Chỉ để hiển thị/gợi ý; `place_order` kiểm tra lại. */
+export async function listMyVouchers(subtotal: number, qty: number): Promise<MyVoucher[]> {
+  if (!isSupabaseConfigured()) return [];
+  try {
+    const sb = await createClient();
+    const { data, error } = await sb.rpc("my_vouchers", { p_subtotal: Math.max(0, Math.trunc(subtotal) || 0), p_qty: Math.max(0, Math.trunc(qty) || 0) });
+    if (error) throw new Error(error.message);
+    return (Array.isArray(data) ? data : []).map((r: Record<string, unknown>) => ({
+      code: String(r.code), title: String(r.title ?? r.code), description: (r.description as string | null) ?? null, auto: Boolean(r.auto),
+      remaining: Number(r.remaining ?? 0), percent: r.percent == null ? null : Number(r.percent), fixed: r.fixed == null ? null : Number(r.fixed),
+      endsAt: (r.ends_at as string | null) ?? null, ok: Boolean(r.ok), discount: Number(r.discount ?? 0), message: (r.message as string | null) ?? null,
+    }));
+  } catch (e) {
+    console.error("[cart] listMyVouchers:", e);
+    return [];
   }
 }
 

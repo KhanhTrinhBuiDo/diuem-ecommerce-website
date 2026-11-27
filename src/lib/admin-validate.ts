@@ -59,6 +59,11 @@ export function validateCoupon(c: CouponRow): string | null {
   if (!(int(c.min_order_vnd) && c.min_order_vnd >= 0)) return "Đơn tối thiểu phải ≥ 0.";
   if (!(int(c.max_uses) && c.max_uses >= 0)) return "Số lượt dùng tối đa phải ≥ 0 (0 = không giới hạn).";
   if (!(int(c.max_discount_vnd) && c.max_discount_vnd >= 0)) return "Mức giảm tối đa phải ≥ 0 (0 = không giới hạn).";
+  if (!(int(c.per_account_grant) && c.per_account_grant >= 0)) return "Số lượt cấp mỗi tài khoản phải ≥ 0 (0 = mã công khai).";
+  if (!(int(c.min_qty) && c.min_qty >= 0)) return "Số món tối thiểu phải ≥ 0.";
+  if (!(int(c.min_completed_orders) && c.min_completed_orders >= 0)) return "Số đơn đã hoàn tất tối thiểu phải ≥ 0.";
+  if (c.auto_apply && c.per_account_grant === 0) return "Voucher tự động áp dụng phải là voucher cấp riêng cho tài khoản (số lượt cấp > 0).";
+  if (c.title.length > 80 || c.description.length > 300) return "Tên tối đa 80 ký tự, mô tả tối đa 300 ký tự.";
   if (c.starts_at && c.ends_at && c.starts_at > c.ends_at) return "Ngày bắt đầu phải trước ngày kết thúc.";
   return null;
 }

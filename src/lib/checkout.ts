@@ -3,11 +3,11 @@
  * GIÁ Ở TRÌNH DUYỆT CHỈ ĐỂ HIỂN THỊ — server (hàm SQL `place_order`) tính lại toàn bộ từ database.
  */
 
-/** Đơn từ mức này được freeship. PHẢI khớp hàm SQL `shipping_fee_vnd` (migration v0.7). */
-export const FREESHIP_FROM_VND = 300000;
-/** TODO(shipping): phí giao hàng khi dưới ngưỡng freeship CHƯA được khách hàng chốt → giá trị tạm. Khớp SQL `shipping_fee_vnd`. */
+/** Phí giao hàng cố định (khách đã chốt). PHẢI khớp SQL `shipping_fee_vnd` (migration v13). */
 export const SHIPPING_FEE_VND = 30000;
-export const shippingFee = (subtotal: number) => (subtotal >= FREESHIP_FROM_VND ? 0 : SHIPPING_FEE_VND);
+/** Mua từ 2 món (tổng số lượng) → tự được miễn phí vận chuyển. PHẢI khớp `place_order` (migration v13). */
+export const FREESHIP_MIN_QTY = 2;
+export const shippingFee = (qty: number) => (qty >= FREESHIP_MIN_QTY ? 0 : SHIPPING_FEE_VND);
 
 export const CART_STORAGE_KEY = "diuem-cart-v1";
 
@@ -51,5 +51,11 @@ export type PlaceOrderResult =
       items?: { sku: string; name?: string; available?: number }[];
       total?: number;
     };
+
+/** Voucher cấp riêng cho tài khoản (RPC `my_vouchers`). `ok` = dùng được với giỏ hiện tại; `message` = lý do chưa dùng được. */
+export type MyVoucher = {
+  code: string; title: string; description: string | null; auto: boolean; remaining: number;
+  percent: number | null; fixed: number | null; endsAt: string | null; ok: boolean; discount: number; message: string | null;
+};
 
 export type CouponQuote = { ok: true; code: string; discount: number } | { ok: false; message: string };

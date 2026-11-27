@@ -74,6 +74,9 @@ export type OrderRow = {
 };
 
 export type CouponRow = { id: string; code: string; discount_type: "percent" | "fixed"; discount_value: number; min_order_vnd: number; starts_at: string; ends_at: string; is_active: boolean;
-  /** 0 = không giới hạn (lưu null trong DB) */ max_uses: number; max_discount_vnd: number; used_count: number };
+  /** 0 = không giới hạn (lưu null trong DB) */ max_uses: number; max_discount_vnd: number; used_count: number;
+  title: string; description: string; auto_apply: boolean;
+  /** Số lượt cấp riêng cho MỖI tài khoản; 0 = mã công khai (lưu null) */ per_account_grant: number;
+  min_qty: number; min_completed_orders: number; new_customer_only: boolean };
 
 export type ActionResult<T = unknown> = ({ ok: true } & T) | { ok: false; error: string };
