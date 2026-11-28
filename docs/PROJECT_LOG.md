@@ -271,3 +271,4 @@ npm run typecheck && npm run build
 - #54 Banner bài viết vẽ sẵn huy hiệu "Đồng hành CÙNG EM" (`postBannerBadge` trong `data/posts.ts`); tắt nếu ảnh đã có huy hiệu.
 - #55 NGAY2011 (20/11/2026) đã hết hạn so với hôm nay; QUACUOINAM bắt đầu 01/12/2026 — sửa ngày trong Admin → Voucher nếu muốn dùng thử. Voucher cấp riêng được cấp 'lười' khi khách mở giỏ hàng/trang voucher (kể cả tài khoản cũ; CHAOBANMOI chỉ cấp cho tài khoản chưa có đơn). Mỗi đơn chỉ dùng 1 voucher.
 - #56 Đơn mẫu `[DEMO] review` có tính vào doanh thu admin — chạy `seed_demo_cleanup.sql` trước khi chạy thật.
+- #57 (28/11/2026) Trang Về Dịu Em: banner cao theo đúng tỉ lệ ảnh (không cắt); sửa Image_1 không hiện (cột `auto` + `w-[min(100%,484px)]` làm khung ảnh co về 0 khi có ảnh thật) → cột `minmax(0,484px)`. Chưa test với ảnh thật.

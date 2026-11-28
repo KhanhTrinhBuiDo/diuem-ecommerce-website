@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight } from "@/components/ui/ArrowRight";
 import { ImageOrPlaceholder } from "@/components/ui/ImageOrPlaceholder";
@@ -27,12 +28,17 @@ export function AboutPage() {
   return (
     <>
       <div className="w-full bg-line pb-[10px] pt-[10px] lg:pb-[14px] lg:pt-[14px]">
-        <ImageOrPlaceholder src={about.banner} alt="Về Dịu Em" label="Banner Về Dịu Em" tone="dark" priority className="h-[clamp(160px,calc(var(--vw)*23),400px)] w-full" />
+        {about.banner ? (
+          // Chiều cao theo đúng tỉ lệ ảnh (không cắt): width 100%, height auto.
+          <Image src={about.banner} alt="Về Dịu Em" width={0} height={0} sizes="calc(var(--vw)*100)" priority className="block h-auto w-full" />
+        ) : (
+          <ImageOrPlaceholder src={null} alt="Về Dịu Em" label="Banner Về Dịu Em" tone="dark" className="h-[clamp(160px,calc(var(--vw)*23),400px)] w-full" />
+        )}
       </div>
 
       {/* Giới thiệu */}
-      <section className={`${wrap} grid items-center gap-10 py-14 lg:grid-cols-[auto_1fr] lg:gap-[clamp(40px,calc(var(--vw)*5),90px)] lg:py-[100px]`}>
-        <div className="mx-auto w-[min(100%,484px)] -rotate-[4.55deg] border-[10px] border-white shadow-[-14px_14px_0_#ff66c4]">
+      <section className={`${wrap} grid items-center gap-10 py-14 lg:grid-cols-[minmax(0,484px)_1fr] lg:justify-center lg:gap-[clamp(40px,calc(var(--vw)*5),90px)] lg:py-[100px]`}>
+        <div className="mx-auto w-full max-w-[484px] -rotate-[4.55deg] border-[10px] border-white shadow-[-14px_14px_0_#ff66c4]">
           <ImageOrPlaceholder src={intro.image} alt="Dịu Em" label="Ảnh 1 · 484×605" sizes="(min-width:1024px) 30vw, 90vw" className="aspect-[484/605] w-full" />
         </div>
         <div className="flex max-w-[620px] flex-col gap-4">
