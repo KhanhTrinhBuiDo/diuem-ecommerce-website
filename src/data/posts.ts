@@ -81,4 +81,4 @@ export const postHref = (slug: string) => `/bai-viet/${slug}`;
 export const getPost = (slug: string) => posts.find((p) => p.slug === slug) ?? null;
 
 /** Bật/tắt huy hiệu "Dịu Em × Đồng hành CÙNG EM" vẽ đè lên banner bài viết. Tắt nếu ảnh banner của bạn đã có sẵn huy hiệu này. */
-export const postBannerBadge = true;
+export const postBannerBadge = false;
