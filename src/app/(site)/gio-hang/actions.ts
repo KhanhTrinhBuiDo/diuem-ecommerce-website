@@ -150,6 +150,7 @@ export async function placeOrder(input: PlaceOrderInput): Promise<PlaceOrderResu
       message: String(r?.message ?? "Không thể tạo đơn hàng."),
       items: Array.isArray(r?.items) ? (r.items as { sku: string; name?: string; available?: number }[]) : undefined,
       total: r?.total_vnd == null ? undefined : Number(r.total_vnd),
+      server: r?.subtotal_vnd == null ? undefined : { subtotal: Number(r.subtotal_vnd), discount: Number(r.discount_vnd ?? 0), shippingFee: Number(r.shipping_fee_vnd ?? 0) },
     };
   } catch (e) {
     console.error("[checkout] place_order:", e);

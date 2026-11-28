@@ -272,3 +272,5 @@ npm run typecheck && npm run build
 - #55 NGAY2011 (20/11/2026) đã hết hạn so với hôm nay; QUACUOINAM bắt đầu 01/12/2026 — sửa ngày trong Admin → Voucher nếu muốn dùng thử. Voucher cấp riêng được cấp 'lười' khi khách mở giỏ hàng/trang voucher (kể cả tài khoản cũ; CHAOBANMOI chỉ cấp cho tài khoản chưa có đơn). Mỗi đơn chỉ dùng 1 voucher.
 - #56 Đơn mẫu `[DEMO] review` có tính vào doanh thu admin — chạy `seed_demo_cleanup.sql` trước khi chạy thật.
 - #57 (28/11/2026) Trang Về Dịu Em: banner cao theo đúng tỉ lệ ảnh (không cắt); sửa Image_1 không hiện (cột `auto` + `w-[min(100%,484px)]` làm khung ảnh co về 0 khi có ảnh thật) → cột `minmax(0,484px)`. Chưa test với ảnh thật.
+- #58 (28/11/2026) Banner bài viết: tắt huy hiệu logo + "Đồng hành CÙNG EM" (`postBannerBadge=false` trong src/data/posts.ts; đặt true để bật lại).
+- #59 (28/11/2026) Ảnh 1 trang Về Dịu Em: bỏ khung viền trắng + bóng hồng + xoay do CSS (giả định ảnh Image_1 đã có sẵn khung/bóng từ Figma). Lỗi "giá đã thay đổi" khi áp voucher: chưa tái hiện được trên DB mô phỏng (server và client khớp); thêm v15 + hiển thị số máy chủ vs màn hình để tìm chỗ lệch. TODO(price-changed): chờ số liệu thật.

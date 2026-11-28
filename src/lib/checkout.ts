@@ -50,6 +50,8 @@ export type PlaceOrderResult =
       /** SKU không còn bán / thiếu hàng (kèm số còn lại) */
       items?: { sku: string; name?: string; available?: number }[];
       total?: number;
+      /** Chi tiết server tính khi `price_changed` (để so với số khách đang thấy) */
+      server?: { subtotal: number; discount: number; shippingFee: number };
     };
 
 /** Voucher cấp riêng cho tài khoản (RPC `my_vouchers`). `ok` = dùng được với giỏ hiện tại; `message` = lý do chưa dùng được. */

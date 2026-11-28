@@ -38,7 +38,7 @@ export function AboutPage() {
 
       {/* Giới thiệu */}
       <section className={`${wrap} grid items-center gap-10 py-14 lg:grid-cols-[minmax(0,484px)_1fr] lg:justify-center lg:gap-[clamp(40px,calc(var(--vw)*5),90px)] lg:py-[100px]`}>
-        <div className="mx-auto w-full max-w-[484px] -rotate-[4.55deg] border-[10px] border-white shadow-[-14px_14px_0_#ff66c4]">
+        <div className="mx-auto w-full max-w-[484px]">
           <ImageOrPlaceholder src={intro.image} alt="Dịu Em" label="Ảnh 1 · 484×605" sizes="(min-width:1024px) 30vw, 90vw" className="aspect-[484/605] w-full" />
         </div>
         <div className="flex max-w-[620px] flex-col gap-4">

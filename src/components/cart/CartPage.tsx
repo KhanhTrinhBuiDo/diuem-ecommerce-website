@@ -69,11 +69,13 @@ export function CartPage() {
       return;
     }
     const subtotal = lines.reduce((s, i) => s + priceOf(i) * i.qty, 0);
+    const qtyAll = lines.reduce((s, i) => s + i.qty, 0);
+    const clientDisc = Math.min(coupon?.discount ?? 0, subtotal);
     setSubmitting(true);
     try {
       const res = await placeOrder({
         items: lines.map((i) => ({ sku: i.variantId, qty: i.qty })),
-        expectedTotal: subtotal - Math.min(coupon?.discount ?? 0, subtotal) + shippingFee(subtotal),
+        expectedTotal: subtotal - clientDisc + shippingFee(qtyAll),
         couponCode: coupon?.code,
         name: v("name"), phone: v("phone"), email: v("email"),
         province: v("province"), district: v("district"), address: v("address"), note: v("note"),
@@ -92,7 +94,11 @@ export function CartPage() {
         setSubmitError(`${res.message} ${names}. Vui lòng giảm số lượng hoặc bỏ sản phẩm đó.`);
         await refresh();
       } else if (res.code === "price_changed") {
-        setSubmitError(`${res.message}${res.total ? ` Tổng mới: ${formatVND(res.total)}.` : ""}`);
+        const sv = res.server;
+        const detail = sv
+          ? ` Máy chủ tính: hàng ${formatVND(sv.subtotal)} − giảm ${formatVND(sv.discount)} + ship ${formatVND(sv.shippingFee)}; trên màn hình: hàng ${formatVND(subtotal)} − giảm ${formatVND(clientDisc)} + ship ${formatVND(shippingFee(qtyAll))}.`
+          : "";
+        setSubmitError(`${res.message}${res.total ? ` Tổng mới: ${formatVND(res.total)}.` : ""}${detail}`);
         await refresh();
       } else if (res.code === "coupon_invalid") {
         setCoupon(null);
